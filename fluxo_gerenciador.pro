@@ -16,13 +16,17 @@ SOURCES += src/main.cpp\
         src/mainwindow.cpp \
     src/project.cpp \
     src/people.cpp \
-    src/tools.cpp
+    src/tools.cpp \
+    src/proposals.cpp \
+    src/contracts.cpp
 
 HEADERS  += src/mainwindow.h \
     src/project.h \
     src/const.h \
     src/people.h \
-    src/tools.h
+    src/tools.h \
+    src/proposals.h \
+    src/contracts.h
 
 TRANSLATIONS = translations/pt-BR.ts
 win32:RC_FILE = src/resources.rc

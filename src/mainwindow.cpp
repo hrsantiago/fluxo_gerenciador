@@ -37,36 +37,32 @@ MainWindow::MainWindow(QWidget *parent)
     fileMenu->addSeparator();
     fileMenu->addAction(tr("Exit"), this, SLOT(close()), QKeySequence("Ctrl+Q"));
 
+    // Edit
+    QMenu *editMenu = qMenuBar->addMenu(tr("Edit"));
+    editMenu->addAction(tr("Find"), this, SLOT(findThing()), QKeySequence("Ctrl+F"));
+
     // View
     QMenu *viewMenu = qMenuBar->addMenu(tr("View"));
-
-    m_contractsAction = viewMenu->addAction(tr("Contracts"));
+    m_contractsAction = viewMenu->addAction(tr("Contracts"), this, SLOT(onViewChanged()), QKeySequence("F1"));
     m_contractsAction->setCheckable(true);
-    connect(m_contractsAction, SIGNAL(triggered()), this, SLOT(onViewChanged()));
-
-    m_proposalsAction = viewMenu->addAction(tr("Proposals"));
+    m_proposalsAction = viewMenu->addAction(tr("Proposals"), this, SLOT(onViewChanged()), QKeySequence("F2"));
     m_proposalsAction->setCheckable(true);
-    connect(m_proposalsAction, SIGNAL(triggered()), this, SLOT(onViewChanged()));
-
-    m_peopleAction = viewMenu->addAction(tr("People"));
+    m_peopleAction = viewMenu->addAction(tr("People"), this, SLOT(onViewChanged()), QKeySequence("F3"));
     m_peopleAction->setCheckable(true);
-    connect(m_peopleAction, SIGNAL(triggered()), this, SLOT(onViewChanged()));
 
     QActionGroup *viewActionGroup = new QActionGroup(this);
     viewActionGroup->addAction(m_contractsAction);
     viewActionGroup->addAction(m_proposalsAction);
     viewActionGroup->addAction(m_peopleAction);
-    m_contractsAction->setChecked(true);
+    m_proposalsAction->setChecked(true);
 
     // Preferences
     QMenu *preferencesMenu = qMenuBar->addMenu(tr("Preferences"));
     QMenu *language = preferencesMenu->addMenu(tr("Language"));
-    m_englishAction = language->addAction(tr("English"));
+    m_englishAction = language->addAction(tr("English"), this, SLOT(onLanguageChanged()));
     m_englishAction->setCheckable(true);
-    connect(m_englishAction, SIGNAL(triggered()), this, SLOT(onLanguageChanged()));
-    m_portugueseAction = language->addAction(tr("Portuguese"));
+    m_portugueseAction = language->addAction(tr("Portuguese"), this, SLOT(onLanguageChanged()));
     m_portugueseAction->setCheckable(true);
-    connect(m_portugueseAction, SIGNAL(triggered()), this, SLOT(onLanguageChanged()));
 
     QActionGroup *actionGroup = new QActionGroup(this);
     actionGroup->addAction(m_englishAction);
@@ -76,18 +72,20 @@ MainWindow::MainWindow(QWidget *parent)
     else if(savedLanguage == "pt-BR")
         m_portugueseAction->setChecked(true);
 
-
     restoreState(m_settings.value("mainWindowState").toByteArray());
 
     g_project = new Project;
-    setCentralWidget(g_project);
     connect(g_project, SIGNAL(projectUpdate()), this, SLOT(onProjectUpdate()));
 
     QString filename = QFileInfo(QFileInfo(QSettings().fileName()).absolutePath(), "project.fm").absoluteFilePath();
     g_project->setFilename(filename);
     g_project->load();
 
+    m_contracts = new Contracts();
+    m_proposals = new Proposals();
     m_people = new People();
+
+    onViewChanged();
 }
 
 void MainWindow::closeEvent(QCloseEvent *)
@@ -194,6 +192,11 @@ void MainWindow::saveFileAs()
     saveFile();
 }
 
+void MainWindow::findThing()
+{
+
+}
+
 void MainWindow::onProjectUpdate()
 {
     QString name = g_project->getName();
@@ -208,7 +211,7 @@ void MainWindow::onProjectUpdate()
 
 void MainWindow::onLanguageChanged()
 {
-    setLanguage("en-US");
+    setLanguage("en-US"); // This uninstalls all translations.
     close();
     QApplication::exit(EXIT_RESTART);
 }
@@ -216,14 +219,18 @@ void MainWindow::onLanguageChanged()
 void MainWindow::onViewChanged()
 {
     QWidget *widget = centralWidget();
-    widget->setVisible(false);
-    widget->setParent(0);
+    if(widget) {
+        widget->setVisible(false);
+        widget->setParent(0);
+    }
 
     if(m_contractsAction->isChecked()) {
-
+        setCentralWidget(m_contracts);
+        m_contracts->setVisible(true);
     }
     else if(m_proposalsAction->isChecked()) {
-
+        setCentralWidget(m_proposals);
+        m_proposals->setVisible(true);
     }
     else if(m_peopleAction->isChecked()) {
         setCentralWidget(m_people);

@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QTranslator>
 #include <QSettings>
+#include "contracts.h"
+#include "proposals.h"
 #include "people.h"
 
 class MainWindow : public QMainWindow
@@ -30,6 +32,8 @@ private:
     QAction *m_proposalsAction;
     QAction *m_peopleAction;
 
+    Contracts *m_contracts;
+    Proposals *m_proposals;
     People *m_people;
 
 private slots:
@@ -37,6 +41,7 @@ private slots:
     void openFile();
     void saveFile();
     void saveFileAs();
+    void findThing();
 
     void onProjectUpdate();
     void onLanguageChanged();
