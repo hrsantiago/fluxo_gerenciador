@@ -11,7 +11,10 @@ public:
     Proposals();
 
 private:
-    QListWidget *m_proposalsList;
+    void updateProposalsList();
+    void updateItemsList();
+
+    QTableWidget *m_proposalsTable;
     QTableWidget *m_itemsTable;
 
 private slots:
@@ -19,6 +22,8 @@ private slots:
     void removeProposal();
     void addItem();
     void removeItem();
+
+    void onProjectLoad();
 
 };
 

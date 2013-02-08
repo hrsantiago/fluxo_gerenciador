@@ -116,7 +116,7 @@ void People::updateList()
 void People::onListItemChanged(QListWidgetItem *current, QListWidgetItem *)
 {
     for(int i = 0; i < m_people.size(); ++i) {
-        if(current->text() == m_people[i].lineEdit[Person::NAME]->text()) {
+        if(current && current->text() == m_people[i].lineEdit[Person::NAME]->text()) {
             for(int j = 0; j < Person::LAST; ++j) {
                 QWidget *widget = Tools::getLayoutWidget(m_layout, j, 1);
                 if(widget) {
@@ -134,7 +134,6 @@ void People::onListItemChanged(QListWidgetItem *current, QListWidgetItem *)
             m_people[i].lineEdit[Person::EMAIL]->setVisible(true);
         }
     }
-
 }
 
 void People::onAddButtonClicked()
@@ -174,8 +173,14 @@ void People::onRemoveButtonClicked()
         if(Tools::requestYesNoFromUser(tr("Remove Person"), tr("Do you really want to remove this person?")) == "No")
             return;
 
-        m_list->removeItemWidget(m_list->currentItem());
-        delete m_list->currentItem();
+        QListWidgetItem *currentItem = m_list->currentItem();
+        for(int i = 0; i < m_people.size(); ++i) {
+            if(currentItem->text() == m_people[i].lineEdit[Person::NAME]->text()) {
+                m_people.erase(m_people.begin()+i);
+                break;
+            }
+        }
+        m_list->removeItemWidget(currentItem);
 
         updateList();
     }

@@ -77,13 +77,14 @@ MainWindow::MainWindow(QWidget *parent)
     g_project = new Project;
     connect(g_project, SIGNAL(projectUpdate()), this, SLOT(onProjectUpdate()));
 
+    m_contracts = new Contracts();
+    m_proposals = new Proposals();
+    connect(g_project, SIGNAL(projectLoad()), m_proposals, SLOT(onProjectLoad()));
+    m_people = new People();
+
     QString filename = QFileInfo(QFileInfo(QSettings().fileName()).absolutePath(), "project.fm").absoluteFilePath();
     g_project->setFilename(filename);
     g_project->load();
-
-    m_contracts = new Contracts();
-    m_proposals = new Proposals();
-    m_people = new People();
 
     onViewChanged();
 }
@@ -203,7 +204,7 @@ void MainWindow::onProjectUpdate()
     if(name.isEmpty())
         setWindowTitle(tr("Manager"));
     else
-        setWindowTitle(tr("Manager - %1").arg(name));
+        setWindowTitle(tr("Manager - %1 %2").arg(name).arg(g_project->isSaved() ? "" : "*"));
 
     m_saveAction->setEnabled(!name.isEmpty());
     m_saveAsAction->setEnabled(!name.isEmpty());
