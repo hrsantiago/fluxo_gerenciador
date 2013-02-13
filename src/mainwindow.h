@@ -1,12 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QTranslator>
-#include <QSettings>
 #include "contracts.h"
 #include "proposals.h"
 #include "people.h"
+#include <QtGui>
 
 class MainWindow : public QMainWindow
 {

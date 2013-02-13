@@ -15,6 +15,27 @@ QWidget *Tools::getLayoutWidget(QGridLayout *layout, int row, int column)
     return NULL;
 }
 
+QHBoxLayout *Tools::createAcceptReject(QDialog *dialog, const QString& acceptText, const QString& rejectText)
+{
+    QHBoxLayout *hLayout = new QHBoxLayout();
+
+    hLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
+
+    QPushButton *acceptButton = new QPushButton(acceptText);
+    acceptButton->connect(acceptButton, SIGNAL(clicked()), dialog, SLOT(accept()));
+    hLayout->addWidget(acceptButton);
+    QPushButton *rejectButton = new QPushButton(rejectText);
+    rejectButton->connect(rejectButton, SIGNAL(clicked()), dialog, SLOT(reject()));
+    hLayout->addWidget(rejectButton);
+
+    return hLayout;
+}
+
+QHBoxLayout *Tools::createOkCancel(QDialog *dialog)
+{
+    return createAcceptReject(dialog, QObject::tr("Ok"), QObject::tr("Cancel"));
+}
+
 QString Tools::requestYesNoFromUser(const QString& title, const QString& question)
 {
     QDialog dialog;
@@ -23,14 +44,8 @@ QString Tools::requestYesNoFromUser(const QString& title, const QString& questio
     QGridLayout *layout = new QGridLayout();
     dialog.setLayout(layout);
 
-    layout->addWidget(new QLabel(question), 0, 0, 1, 2);
-
-    QPushButton *yes = new QPushButton(QObject::tr("Yes"));
-    yes->connect(yes, SIGNAL(clicked()), &dialog, SLOT(accept()));
-    layout->addWidget(yes, 1, 0);
-    QPushButton *no = new QPushButton(QObject::tr("No"));
-    no->connect(no, SIGNAL(clicked()), &dialog, SLOT(reject()));
-    layout->addWidget(no, 1, 1);
+    layout->addWidget(new QLabel(question), 0, 0);
+    layout->addLayout(createAcceptReject(&dialog, QObject::tr("Yes"), QObject::tr("No")), 1, 0);
 
     if(dialog.exec() == QDialog::Accepted)
         return "Yes";
@@ -74,15 +89,7 @@ QStringList Tools::requestDataFromUser(const QString &title, const QStringList& 
         }
     }
 
-    QHBoxLayout *hLayout = new QHBoxLayout();
-    layout->addLayout(hLayout, dataName.size(), 0, 1, 2);
-
-    QPushButton *ok = new QPushButton("Ok");
-    ok->connect(ok, SIGNAL(clicked()), &dialog, SLOT(accept()));
-    hLayout->addWidget(ok);
-    QPushButton *cancel = new QPushButton("Cancelar");
-    cancel->connect(cancel, SIGNAL(clicked()), &dialog, SLOT(reject()));
-    hLayout->addWidget(cancel);
+    layout->addLayout(createOkCancel(&dialog), dataName.size(), 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
         QStringList returnStringList;

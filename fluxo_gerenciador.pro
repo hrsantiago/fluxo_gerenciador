@@ -18,7 +18,8 @@ SOURCES += src/main.cpp\
     src/people.cpp \
     src/tools.cpp \
     src/proposals.cpp \
-    src/contracts.cpp
+    src/contracts.cpp \
+    src/proposal.cpp
 
 HEADERS  += src/mainwindow.h \
     src/project.h \
@@ -26,7 +27,8 @@ HEADERS  += src/mainwindow.h \
     src/people.h \
     src/tools.h \
     src/proposals.h \
-    src/contracts.h
+    src/contracts.h \
+    src/proposal.h
 
 TRANSLATIONS = translations/pt-BR.ts
 win32:RC_FILE = src/resources.rc

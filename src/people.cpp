@@ -142,11 +142,11 @@ void People::onAddButtonClicked()
     defaultData[0] = "QLabel|";
     defaultData[2] = QString("QComboBox|%1|%2").arg(tr("Male")).arg(tr("Female"));
 
-    QStringList a = Tools::requestDataFromUser(tr("Add Person"), QString(tr("Personal and contact data,"
-                                                                            "Name,"
-                                                                            "Gender,"
-                                                                            "Telephone,"
-                                                                            "Email")).split(","), defaultData);
+    QStringList a = Tools::requestDataFromUser(tr("Add Person"), tr("Personal and contact data,"
+                                                                    "Name,"
+                                                                    "Gender,"
+                                                                    "Telephone,"
+                                                                    "Email").split(","), defaultData);
     if(!Tools::isRequestedDataValid(a))
         return;
 

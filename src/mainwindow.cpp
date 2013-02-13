@@ -1,16 +1,7 @@
 #include "const.h"
 #include "mainwindow.h"
 #include "project.h"
-#include <QMenuBar>
-#include <QGridLayout>
-#include <QLabel>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QDialog>
-#include <QHBoxLayout>
-#include <QFileDialog>
-#include <QDebug>
-#include <QApplication>
+#include "tools.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -110,6 +101,19 @@ void MainWindow::setLanguage(const QString& language)
         m_translator = NULL;
     }
 
+    if(language == "en-US") {
+        QLocale locale = QLocale(QLocale::English, QLocale::UnitedStates);
+        QLocale::setDefault(locale);
+    }
+    else if(language == "pt-BR") {
+        QLocale locale = QLocale(QLocale::Portuguese, QLocale::Brazil);
+        QLocale::setDefault(locale);
+    }
+    else if(language == "es-ES") {
+        QLocale locale = QLocale(QLocale::Spanish, QLocale::Spain);
+        QLocale::setDefault(locale);
+    }
+
     if(language != "en-US") {
         m_translator = new QTranslator();
         if(!m_translator->load(QString("translations/%1").arg(language)))
@@ -131,15 +135,7 @@ void MainWindow::newFile()
     QLineEdit *nameLineEdit = new QLineEdit;
     layout->addWidget(nameLineEdit, row++, 1);
 
-    QHBoxLayout *hLayout = new QHBoxLayout();
-    layout->addLayout(hLayout, row, 0, 1, 2);
-
-    QPushButton *ok = new QPushButton(tr("Ok"));
-    connect(ok, SIGNAL(clicked()), &dialog, SLOT(accept()));
-    hLayout->addWidget(ok);
-    QPushButton *cancel = new QPushButton(tr("Cancel"));
-    connect(cancel, SIGNAL(clicked()), &dialog, SLOT(reject()));
-    hLayout->addWidget(cancel);
+    layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
         g_project->reset();
@@ -204,7 +200,7 @@ void MainWindow::onProjectUpdate()
     if(name.isEmpty())
         setWindowTitle(tr("Manager"));
     else
-        setWindowTitle(tr("Manager - %1 %2").arg(name).arg(g_project->isSaved() ? "" : "*"));
+        setWindowTitle(tr("Manager - %1%2").arg(name).arg(g_project->isSaved() ? "" : " *"));
 
     m_saveAction->setEnabled(!name.isEmpty());
     m_saveAsAction->setEnabled(!name.isEmpty());

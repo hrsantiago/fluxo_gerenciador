@@ -28,16 +28,18 @@ void Project::save()
     for(int i = 0; i < m_proposals.size(); ++i) {
         Proposal *proposal = m_proposals[i];
         settings.beginGroup(QString("Proposal%1").arg(i));
-        settings.setValue("description", m_proposals[i]->description);
-        settings.setValue("start", m_proposals[i]->start);
-        settings.setValue("end", m_proposals[i]->end);
+        settings.setValue("reference", m_proposals[i]->getReference());
+        settings.setValue("description", m_proposals[i]->getDescription());
+        settings.setValue("date", m_proposals[i]->getDate());
 
-        for(int j = 0; j < proposal->items.size(); ++j) {
-            ProposalItem *item = proposal->items[j];
+        const QVector<ProposalItem*>& items = proposal->getItems();
+        for(int j = 0; j < items.size(); ++j) {
+            ProposalItem *item = items[j];
             settings.beginGroup(QString("ProposalItem%1").arg(j));
-            settings.setValue("value", item->value);
-            settings.setValue("start", item->start);
-            settings.setValue("end", item->end);
+            settings.setValue("description", item->getDescription());
+            settings.setValue("unit", item->getUnit());
+            settings.setValue("price", item->getPrice());
+            settings.setValue("amount", item->getAmount());
             settings.endGroup();
         }
         settings.endGroup();
@@ -61,19 +63,20 @@ void Project::load()
     for(QStringList::iterator it = proposals.begin(), end = proposals.end(); it != end; ++it) {
         Proposal *proposal = new Proposal;
         settings.beginGroup(*it);
-        proposal->description = settings.value("description").toString();
-        proposal->start = settings.value("start").toDate();
-        proposal->end = settings.value("end").toDate();
+        proposal->setReference(settings.value("reference").toString());
+        proposal->setDescription(settings.value("description").toString());
+        proposal->setDate(settings.value("date").toDate());
 
         QStringList items = settings.childGroups();
         for(QStringList::iterator it = items.begin(), end = items.end(); it != end; ++it) {
             ProposalItem *item = new ProposalItem;
             settings.beginGroup(*it);
-            item->value = settings.value("value").toString();
-            item->start = settings.value("start").toDate();
-            item->end = settings.value("end").toDate();
+            item->setDescription(settings.value("description").toString());
+            item->setUnit(settings.value("unit").toString());
+            item->setPrice(settings.value("price").toFloat());
+            item->setAmount(settings.value("amount").toInt());
             settings.endGroup();
-            proposal->items.push_back(item);
+            proposal->addItem(item);
         }
         settings.endGroup();
         m_proposals.push_back(proposal);
@@ -92,7 +95,24 @@ void Project::addProposal(Proposal *proposal)
     setSaved(false);
 }
 
-void Project::removeProposal()
+Proposal *Project::getProposal(const QString& reference)
 {
+    for(int i = 0; i < m_proposals.size(); ++i) {
+        if(m_proposals[i]->getReference() == reference) {
+            setSaved(false); // Editing or not, mark this as a change.
+            return m_proposals[i];
+        }
+    }
+    return NULL;
+}
+
+void Project::removeProposal(const QString& reference)
+{
+    for(int i = 0; i < m_proposals.size(); ++i) {
+        if(m_proposals[i]->getReference() == reference) {
+            m_proposals.erase(m_proposals.begin()+i);
+            break;
+        }
+    }
     setSaved(false);
 }

@@ -2,29 +2,7 @@
 #define PROJECT_H
 
 #include <QtGui>
-
-struct ProposalItem
-{
-    enum State {
-        STATE_PENDING,
-        STATE_DONE,
-        STATE_DELAYED,
-        STATE_LAST
-    };
-
-    QDate start;
-    QDate end;
-    QString value;
-    State state;
-};
-
-struct Proposal
-{
-    QString description;
-    QDate start;
-    QDate end;
-    QVector<ProposalItem*> items;
-};
+#include "proposal.h"
 
 class Project : public QWidget
 {
@@ -45,8 +23,9 @@ public:
     QString getFilename() { return m_filename; }
 
     void addProposal(Proposal *proposal);
+    Proposal *getProposal(const QString& reference);
     const QVector<Proposal*>& getProposals() { return m_proposals; }
-    void removeProposal();
+    void removeProposal(const QString &reference);
 
     void setSaved(bool saved) { m_isSaved = saved; emit projectUpdate(); }
     bool isSaved() { return m_isSaved; }
