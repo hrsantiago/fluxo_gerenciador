@@ -40,11 +40,14 @@ MainWindow::MainWindow(QWidget *parent)
     m_proposalsAction->setCheckable(true);
     m_peopleAction = viewMenu->addAction(tr("People"), this, SLOT(onViewChanged()), QKeySequence("F3"));
     m_peopleAction->setCheckable(true);
+    m_companiesAction = viewMenu->addAction(tr("Companies"), this, SLOT(onViewChanged()), QKeySequence("F4"));
+    m_companiesAction->setCheckable(true);
 
     QActionGroup *viewActionGroup = new QActionGroup(this);
     viewActionGroup->addAction(m_contractsAction);
     viewActionGroup->addAction(m_proposalsAction);
     viewActionGroup->addAction(m_peopleAction);
+    viewActionGroup->addAction(m_companiesAction);
     m_proposalsAction->setChecked(true);
 
     // Preferences
@@ -72,6 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_proposals = new Proposals();
     connect(g_project, SIGNAL(projectLoad()), m_proposals, SLOT(onProjectLoad()));
     m_people = new People();
+    connect(g_project, SIGNAL(projectLoad()), m_people, SLOT(onProjectLoad()));
+    m_companies = new Companies();
 
     QString filename = QFileInfo(QFileInfo(QSettings().fileName()).absolutePath(), "project.fm").absoluteFilePath();
     g_project->setFilename(filename);
@@ -80,13 +85,34 @@ MainWindow::MainWindow(QWidget *parent)
     onViewChanged();
 }
 
+MainWindow::~MainWindow()
+{
+    if(m_translator) {
+        QApplication::removeTranslator(m_translator);
+        delete m_translator;
+        m_translator = NULL;
+    }
+
+    m_contracts->setParent(NULL);
+    delete m_contracts;
+
+    m_proposals->setParent(NULL);
+    delete m_proposals;
+
+    m_people->setParent(NULL);
+    delete m_people;
+
+    m_companies->setParent(NULL);
+    delete m_companies;
+}
+
 void MainWindow::closeEvent(QCloseEvent *)
 {
     m_settings.setValue("language", m_englishAction->isChecked() ? "en-US" : "pt-BR");
     m_settings.setValue("mainWindowGeometry", saveGeometry());
     m_settings.setValue("mainWindowState", saveState());
 
-    m_people->save();
+    m_companies->save();
 
     QString filename = QFileInfo(QFileInfo(QSettings().fileName()).absolutePath(), "project.fm").absoluteFilePath();
     g_project->setFilename(filename);
@@ -232,5 +258,9 @@ void MainWindow::onViewChanged()
     else if(m_peopleAction->isChecked()) {
         setCentralWidget(m_people);
         m_people->setVisible(true);
+    }
+    else if(m_companiesAction->isChecked()) {
+        setCentralWidget(m_companies);
+        m_companies->setVisible(true);
     }
 }

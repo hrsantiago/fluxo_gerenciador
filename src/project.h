@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include "proposal.h"
+#include "person.h"
 
 class Project : public QWidget
 {
@@ -22,10 +23,15 @@ public:
     void setFilename(const QString& filename) { m_filename = filename; }
     QString getFilename() { return m_filename; }
 
-    void addProposal(Proposal *proposal);
+    bool addProposal(Proposal *proposal);
     Proposal *getProposal(const QString& reference);
     const QVector<Proposal*>& getProposals() { return m_proposals; }
     void removeProposal(const QString &reference);
+
+    bool addPerson(Person *person);
+    Person *getPerson(const QString& name);
+    const QVector<Person*>& getPeople() { return m_people; }
+    void removePerson(const QString& name);
 
     void setSaved(bool saved) { m_isSaved = saved; emit projectUpdate(); }
     bool isSaved() { return m_isSaved; }
@@ -34,6 +40,7 @@ private:
     QString m_name;
     QString m_filename;
     QVector<Proposal*> m_proposals;
+    QVector<Person*> m_people;
     bool m_isSaved;
 
 signals:

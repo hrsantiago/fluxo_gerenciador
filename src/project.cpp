@@ -46,6 +46,17 @@ void Project::save()
     }
     settings.endGroup();
 
+    settings.beginGroup("People");
+    for(int i = 0; i < m_people.size(); ++i) {
+        settings.beginGroup(QString("Person%1").arg(i));
+        settings.setValue("name", m_people[i]->getName());
+        settings.setValue("gender", m_people[i]->getGender());
+        settings.setValue("telephone", m_people[i]->getTelephone());
+        settings.setValue("email", m_people[i]->getEmail());
+        settings.endGroup();
+    }
+    settings.endGroup();
+
     settings.endGroup();
 
     setSaved(true);
@@ -83,25 +94,44 @@ void Project::load()
     }
     settings.endGroup();
 
+    settings.beginGroup("People");
+    QStringList childGroups = settings.childGroups();
+    for(QStringList::iterator it = childGroups.begin(), end = childGroups.end(); it != end; ++it) {
+        settings.beginGroup(*it);
+        Person *person = new Person;
+        person->setName(settings.value("name").toString());
+        person->setGender((Person::Gender)settings.value("gender").toInt());
+        person->setTelephone(settings.value("telephone").toString());
+        person->setEmail(settings.value("email").toString());
+        m_people.push_back(person);
+        settings.endGroup();
+    }
+    settings.endGroup();
+
     settings.endGroup();
 
     setSaved(true);
     emit projectLoad();
 }
 
-void Project::addProposal(Proposal *proposal)
+bool Project::addProposal(Proposal *proposal)
 {
+    for(int i = 0; i < m_proposals.size(); ++i) {
+        if(m_proposals[i]->getReference() == proposal->getReference()) {
+            delete proposal;
+            return false;
+        }
+    }
     m_proposals.push_back(proposal);
     setSaved(false);
+    return true;
 }
 
 Proposal *Project::getProposal(const QString& reference)
 {
     for(int i = 0; i < m_proposals.size(); ++i) {
-        if(m_proposals[i]->getReference() == reference) {
-            setSaved(false); // Editing or not, mark this as a change.
+        if(m_proposals[i]->getReference() == reference)
             return m_proposals[i];
-        }
     }
     return NULL;
 }
@@ -111,8 +141,41 @@ void Project::removeProposal(const QString& reference)
     for(int i = 0; i < m_proposals.size(); ++i) {
         if(m_proposals[i]->getReference() == reference) {
             m_proposals.erase(m_proposals.begin()+i);
+            setSaved(false);
             break;
         }
     }
+}
+
+bool Project::addPerson(Person *person)
+{
+    for(int i = 0; i < m_people.size(); ++i) {
+        if(m_people[i]->getName() == person->getName()) {
+            delete person;
+            return false;
+        }
+    }
+    m_people.push_back(person);
     setSaved(false);
+    return true;
+}
+
+Person *Project::getPerson(const QString& name)
+{
+    for(int i = 0; i < m_people.size(); ++i) {
+        if(m_people[i]->getName() == name)
+            return m_people[i];
+    }
+    return NULL;
+}
+
+void Project::removePerson(const QString& name)
+{
+    for(int i = 0; i < m_people.size(); ++i) {
+        if(m_people[i]->getName() == name) {
+            m_people.erase(m_people.begin()+i);
+            setSaved(false);
+            break;
+        }
+    }
 }

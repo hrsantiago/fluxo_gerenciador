@@ -4,6 +4,7 @@
 #include "contracts.h"
 #include "proposals.h"
 #include "people.h"
+#include "companies.h"
 #include <QtGui>
 
 class MainWindow : public QMainWindow
@@ -12,7 +13,7 @@ class MainWindow : public QMainWindow
     
 public:
     MainWindow(QWidget *parent = 0);
-    ~MainWindow() {}
+    ~MainWindow();
 
     void closeEvent(QCloseEvent *);
 
@@ -29,10 +30,12 @@ private:
     QAction *m_contractsAction;
     QAction *m_proposalsAction;
     QAction *m_peopleAction;
+    QAction *m_companiesAction;
 
     Contracts *m_contracts;
     Proposals *m_proposals;
     People *m_people;
+    Companies *m_companies;
 
 private slots:
     void newFile();

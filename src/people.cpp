@@ -1,11 +1,6 @@
 #include "people.h"
+#include "project.h"
 #include "tools.h"
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QSettings>
-#include <QSplitter>
-#include <QLabel>
-#include <QDebug>
 
 People::People(QWidget *parent) :
     QWidget(parent)
@@ -36,11 +31,23 @@ People::People(QWidget *parent) :
     m_layout = new QGridLayout();
     right->setLayout(m_layout);
 
+    m_nameWidget = new QLineEdit();
+    m_genderWidget = new QComboBox();
+    m_genderWidget->addItem(tr("Male"));
+    m_genderWidget->addItem(tr("Female"));
+    m_telephoneWidget = new QLineEdit();
+    m_emailWidget = new QLineEdit();
+    connectWidgets();
+
     int row = 0;
-    m_layout->addWidget(new QLabel(tr("Name:")), row++, 0);
-    m_layout->addWidget(new QLabel(tr("Gender:")), row++, 0);
-    m_layout->addWidget(new QLabel(tr("Telephone:")), row++, 0);
-    m_layout->addWidget(new QLabel(tr("Email:")), row++, 0);
+    m_layout->addWidget(new QLabel(tr("Name:")), row, 0);
+    m_layout->addWidget(m_nameWidget, row++, 1);
+    m_layout->addWidget(new QLabel(tr("Gender:")), row, 0);
+    m_layout->addWidget(m_genderWidget, row++, 1);
+    m_layout->addWidget(new QLabel(tr("Telephone:")), row, 0);
+    m_layout->addWidget(m_telephoneWidget, row++, 1);
+    m_layout->addWidget(new QLabel(tr("Email:")), row, 0);
+    m_layout->addWidget(m_emailWidget, row++, 1);
     m_layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 0, 1, 2);
 
     // Splitter
@@ -55,84 +62,91 @@ People::People(QWidget *parent) :
     hSplitter->addWidget(right);
     hSplitter->setStretchFactor(0, 30);
     hSplitter->setStretchFactor(1, 70);
-
-    load();
 }
 
-void People::save()
+void People::connectWidgets()
 {
-    QSettings settings("people.ini", QSettings::IniFormat);
-    settings.clear();
-
-    settings.beginGroup("People");
-    for(int i = 0; i < m_people.size(); ++i) {
-        settings.beginGroup(QString("Person%1").arg(i));
-        settings.setValue("name", m_people[i].lineEdit[Person::NAME]->text());
-        settings.setValue("gender", m_people[i].comboBox[Person::GENDER]->currentIndex());
-        settings.setValue("telephone", m_people[i].lineEdit[Person::TELEPHONE]->text());
-        settings.setValue("email", m_people[i].lineEdit[Person::EMAIL]->text());
-        settings.endGroup();
-    }
-    settings.endGroup();
+    connect(m_nameWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    connect(m_genderWidget, SIGNAL(currentIndexChanged(int)), this, SLOT(onWidgetChanged()));
+    connect(m_telephoneWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    connect(m_emailWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
 }
 
-void People::load()
+void People::disconnectWidgets()
 {
-    QSettings settings("people.ini", QSettings::IniFormat);
-
-    settings.beginGroup("People");
-    QStringList childGroups = settings.childGroups();
-    for(QStringList::iterator it = childGroups.begin(), end = childGroups.end(); it != end; ++it) {
-        settings.beginGroup(*it);
-        Person person;
-        person.lineEdit[Person::NAME]->setText(settings.value("name").toString());
-        person.comboBox[Person::GENDER]->setCurrentIndex(settings.value("gender").toInt());
-        person.lineEdit[Person::TELEPHONE]->setText(settings.value("telephone").toString());
-        person.lineEdit[Person::EMAIL]->setText(settings.value("email").toString());
-        m_people.push_back(person);
-        settings.endGroup();
-    }
-    settings.endGroup();
-
-    updateList();
+    disconnect(m_nameWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    disconnect(m_genderWidget, SIGNAL(currentIndexChanged(int)), this, SLOT(onWidgetChanged()));
+    disconnect(m_telephoneWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    disconnect(m_emailWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
 }
 
 void People::updateList()
 {
-    QModelIndex currentIndex = m_list->currentIndex();
-    int count = m_list->count();
+    QString currentName;
+    if(m_list->currentItem())
+        currentName = m_list->currentItem()->text();
 
+    QListWidgetItem *currentItem = NULL;
+
+    disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
     m_list->clear();
-    for(QVector<Person>::iterator it = m_people.begin(), end = m_people.end(); it != end; ++it)
-        m_list->addItem((*it).lineEdit[Person::NAME]->text());
-    m_list->sortItems();
+    const QVector<Person*>& people = g_project->getPeople();
+    for(QVector<Person*>::const_iterator it = people.constBegin(), end = people.constEnd(); it != end; ++it) {
+        QListWidgetItem *item = new QListWidgetItem((*it)->getName());
+        m_list->addItem(item);
 
-    if(m_list->count() == count)
-        m_list->setCurrentIndex(currentIndex);
+        if((*it)->getName() == currentName)
+            currentItem = item;
+    }
+    m_list->sortItems();
+    connect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+
+    if(currentItem)
+        m_list->setCurrentItem(currentItem);
     else if(m_list->count() > 0)
         m_list->setCurrentRow(0);
 }
 
-void People::onListItemChanged(QListWidgetItem *current, QListWidgetItem *)
+void People::updatePerson(const QString& name)
 {
-    for(int i = 0; i < m_people.size(); ++i) {
-        if(current && current->text() == m_people[i].lineEdit[Person::NAME]->text()) {
-            for(int j = 0; j < Person::LAST; ++j) {
-                QWidget *widget = Tools::getLayoutWidget(m_layout, j, 1);
-                if(widget) {
-                    widget->hide();
-                    widget->setParent(0);
-                }
-            }
-            m_layout->addWidget(m_people[i].lineEdit[Person::NAME], 0, 1);
-            m_layout->addWidget(m_people[i].comboBox[Person::GENDER], 1, 1);
-            m_layout->addWidget(m_people[i].lineEdit[Person::TELEPHONE], 2, 1);
-            m_layout->addWidget(m_people[i].lineEdit[Person::EMAIL], 3, 1);
-            m_people[i].lineEdit[Person::NAME]->setVisible(true);
-            m_people[i].comboBox[Person::GENDER]->setVisible(true);
-            m_people[i].lineEdit[Person::TELEPHONE]->setVisible(true);
-            m_people[i].lineEdit[Person::EMAIL]->setVisible(true);
-        }
+    Person *person = g_project->getPerson(name);
+    if(person) {
+        person->setName(m_nameWidget->text());
+        person->setGender((Person::Gender)m_genderWidget->currentIndex());
+        person->setTelephone(m_telephoneWidget->text());
+        person->setEmail(m_emailWidget->text());
+    }
+}
+
+void People::onWidgetChanged()
+{
+    if(m_list->currentItem()) {
+        QString name = m_list->currentItem()->text();
+        updatePerson(name);
+    }
+    if(sender() && sender() == m_nameWidget) {
+        disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+        m_list->currentItem()->setText(m_nameWidget->text());
+        m_list->sortItems();
+        connect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+    }
+}
+
+void People::onListItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    if(previous) {
+        QString name = previous->text();
+        updatePerson(name);
+    }
+    if(current) {
+        QString name = current->text();
+        Person *person = g_project->getPerson(name);
+        disconnectWidgets();
+        m_nameWidget->setText(person->getName());
+        m_genderWidget->setCurrentIndex((int)person->getGender());
+        m_telephoneWidget->setText(person->getTelephone());
+        m_emailWidget->setText(person->getEmail());
+        connectWidgets();
     }
 }
 
@@ -150,38 +164,32 @@ void People::onAddButtonClicked()
     if(!Tools::isRequestedDataValid(a))
         return;
 
-    for(int i = 0; i < m_people.size(); ++i) {
-        if(a[0] == m_people[i].lineEdit[Person::NAME]->text()) {
-            qCritical() << tr("A person with this name already exists.");
-            return;
-        }
-    }
+    Person *person = new Person;
+    person->setName(a[0]);
+    person->setGender((Person::Gender)a[1].split("|")[1].toInt());
+    person->setTelephone(a[2]);
+    person->setEmail(a[3]);
 
-    Person person;
-    person.lineEdit[Person::NAME]->setText(a[0]);
-    person.comboBox[Person::GENDER]->setCurrentIndex(a[1].split("|")[1].toInt());
-    person.lineEdit[Person::TELEPHONE]->setText(a[2]);
-    person.lineEdit[Person::EMAIL]->setText(a[3]);
-    m_people.push_back(person);
-
-    updateList();
+    if(g_project->addPerson(person))
+        updateList();
+    else
+        qCritical() << tr("A person with this name already exists.");
 }
 
 void People::onRemoveButtonClicked()
 {
-    if(m_list->currentItem()) {
+    QListWidgetItem *currentItem = m_list->currentItem();
+    if(currentItem) {
         if(Tools::requestYesNoFromUser(tr("Remove Person"), tr("Do you really want to remove this person?")) == "No")
             return;
 
-        QListWidgetItem *currentItem = m_list->currentItem();
-        for(int i = 0; i < m_people.size(); ++i) {
-            if(currentItem->text() == m_people[i].lineEdit[Person::NAME]->text()) {
-                m_people.erase(m_people.begin()+i);
-                break;
-            }
-        }
-        m_list->removeItemWidget(currentItem);
-
-        updateList();
+        g_project->removePerson(currentItem->text());
+        m_list->takeItem(m_list->row(currentItem));
+        delete currentItem;
     }
+}
+
+void People::onProjectLoad()
+{
+    updateList();
 }

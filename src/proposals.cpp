@@ -218,10 +218,12 @@ void Proposals::onAddProposalClicked()
         proposal->setReference(referenceLineEdit->text());
         proposal->setDescription(descriptionLineEdit->text());
         proposal->setDate(calendar->selectedDate());
-        g_project->addProposal(proposal);
-
-        addProposal(proposal);
-        m_proposalsTable->resizeColumnsToContents();
+        if(g_project->addProposal(proposal)) {
+            addProposal(proposal);
+            m_proposalsTable->resizeColumnsToContents();
+        }
+        else
+            qCritical() << tr("A proposal with this reference already exists.");
     }
 }
 
