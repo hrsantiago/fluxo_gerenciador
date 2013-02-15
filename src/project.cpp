@@ -57,6 +57,7 @@ void Project::save(bool backup)
     for(int i = 0; i < m_proposals.size(); ++i) {
         Proposal *proposal = m_proposals[i];
         settings.beginGroup(QString("Proposal%1").arg(i));
+        settings.setValue("state", m_proposals[i]->getState());
         settings.setValue("reference", m_proposals[i]->getReference());
         settings.setValue("description", m_proposals[i]->getDescription());
         settings.setValue("client", m_proposals[i]->getClient());
@@ -132,6 +133,7 @@ void Project::load(bool backup)
     for(QStringList::iterator it = proposals.begin(), end = proposals.end(); it != end; ++it) {
         Proposal *proposal = new Proposal;
         settings.beginGroup(*it);
+        proposal->setState((Proposal::State)settings.value("state").toInt());
         proposal->setReference(settings.value("reference").toString());
         proposal->setDescription(settings.value("description").toString());
         proposal->setClient(settings.value("client").toString());

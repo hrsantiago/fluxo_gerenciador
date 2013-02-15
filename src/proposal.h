@@ -8,7 +8,17 @@ class ProposalItem;
 class Proposal
 {
 public:
+    enum State {
+        STATE_PENDING,
+        STATE_SENT,
+        STATE_ACCEPTED,
+        STATE_DECLINED
+    };
+
     Proposal();
+
+    void setState(State state);
+    State getState() { return m_state; }
 
     void setReference(const QString& reference);
     QString getReference() { return m_reference; }
@@ -28,6 +38,7 @@ public:
     void removeItem(int id);
 
 private:
+    State m_state;
     QString m_reference;
     QString m_description;
     QString m_client;

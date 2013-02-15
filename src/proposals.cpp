@@ -5,24 +5,22 @@
 
 Proposals::Proposals()
 {
+    // Tab
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout);
+
+    QTabWidget *tabWidget = new QTabWidget();
+    layout->addWidget(tabWidget);
+
+    // Generic
     QGridLayout *gLayout;
     int row;
 
-    QPushButton *addProposal = new QPushButton("+");
-    connect(addProposal, SIGNAL(clicked()), this, SLOT(onAddProposalClicked()));
-
-    QPushButton *removeProposal = new QPushButton("-");
-    connect(removeProposal, SIGNAL(clicked()), this, SLOT(onRemoveProposalClicked()));
-
-    QPushButton *addItem = new QPushButton("+");
-    connect(addItem, SIGNAL(clicked()), this, SLOT(onAddItemClicked()));
-
-    QPushButton *removeItem = new QPushButton("-");
-    connect(removeItem, SIGNAL(clicked()), this, SLOT(onRemoveItemClicked()));
-
+    // Top
     m_proposalsTable = new QTableWidget;
-    m_proposalsTable->setColumnCount(4);
-    m_proposalsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).split(","));
+    m_proposalsTable->setColumnCount(5);
+    m_proposalsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("*").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).split(","));
     m_proposalsTable->verticalHeader()->hide();
     m_proposalsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_proposalsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -30,15 +28,11 @@ Proposals::Proposals()
     connect(m_proposalsTable, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(onProposalsCurrentCellChanged(int,int,int,int)));
     connect(m_proposalsTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(onProposalsCellDoubleClicked(int, int)));
 
-    m_itemsTable = new QTableWidget;
-    m_itemsTable->setColumnCount(5);
-    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg(tr("#")).arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg(tr("Amount")).split(","));
-    m_itemsTable->verticalHeader()->hide();
-    m_itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-    m_itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_itemsTable->setSortingEnabled(true);
+    QPushButton *addProposal = new QPushButton("+");
+    connect(addProposal, SIGNAL(clicked()), this, SLOT(onAddProposalClicked()));
+    QPushButton *removeProposal = new QPushButton("-");
+    connect(removeProposal, SIGNAL(clicked()), this, SLOT(onRemoveProposalClicked()));
 
-    // Top
     QWidget *top = new QWidget;
     gLayout = new QGridLayout();
     top->setLayout(gLayout);
@@ -51,6 +45,19 @@ Proposals::Proposals()
     gLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 1);
 
     // Bottom
+    m_itemsTable = new QTableWidget;
+    m_itemsTable->setColumnCount(5);
+    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg(tr("#")).arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg(tr("Amount")).split(","));
+    m_itemsTable->verticalHeader()->hide();
+    m_itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_itemsTable->setSortingEnabled(true);
+
+    QPushButton *addItem = new QPushButton("+");
+    connect(addItem, SIGNAL(clicked()), this, SLOT(onAddItemClicked()));
+    QPushButton *removeItem = new QPushButton("-");
+    connect(removeItem, SIGNAL(clicked()), this, SLOT(onRemoveItemClicked()));
+
     QWidget *bottom = new QWidget;
     gLayout = new QGridLayout();
     bottom->setLayout(gLayout);
@@ -63,17 +70,22 @@ Proposals::Proposals()
     gLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 1);
 
     // Splitter
-    QVBoxLayout *layout = new QVBoxLayout();
-    layout->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout);
-
     QSplitter *vSplitter = new QSplitter(Qt::Vertical);
-    layout->addWidget(vSplitter);
+    tabWidget->addTab(vSplitter, tr("Proposals"));
 
     vSplitter->addWidget(top);
     vSplitter->addWidget(bottom);
     vSplitter->setStretchFactor(0, 30);
     vSplitter->setStretchFactor(1, 70);
+
+
+    // Templates
+    QWidget *templates = new QWidget();
+    tabWidget->addTab(templates, tr("Templates"));
+
+    // Statistics
+    QWidget *statistics = new QWidget();
+    tabWidget->addTab(statistics, tr("Statistics"));
 }
 
 void Proposals::updateProposalsList()
@@ -147,6 +159,27 @@ MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
 {
     QLocale locale;
 
+    MyTableWidgetItem *state = new MyTableWidgetItem();
+    Proposal::State stateValue = proposal->getState();
+    if(stateValue == Proposal::STATE_PENDING) {
+        state->setIcon(QIcon("resources/images/pending.png"));
+        state->setToolTip(tr("Pending"));
+    }
+    else if(stateValue == Proposal::STATE_SENT) {
+        state->setIcon(QIcon("resources/images/sent.png"));
+        state->setToolTip(tr("Sent"));
+    }
+    else if(stateValue == Proposal::STATE_ACCEPTED) {
+        state->setIcon(QIcon("resources/images/accepted.png"));
+        state->setToolTip(tr("Accepted"));
+    }
+    else if(stateValue == Proposal::STATE_DECLINED) {
+        state->setIcon(QIcon("resources/images/declined.png"));
+        state->setToolTip(tr("Declined"));
+    }
+    state->setData(Qt::UserRole, proposal->getState());
+    state->setFlags(state->flags() & ~Qt::ItemIsEditable);
+
     MyTableWidgetItem *reference = new MyTableWidgetItem();
     reference->setData(Qt::DisplayRole, proposal->getReference());
     reference->setFlags(reference->flags() & ~Qt::ItemIsEditable);
@@ -165,6 +198,7 @@ MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
     date->setFlags(date->flags() & ~Qt::ItemIsEditable);
 
     m_proposalsTable->setRowCount(m_proposalsTable->rowCount()+1);
+    m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_STATE, state);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_REFERENCE, reference);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_DESCRIPTION, description);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_CLIENT, client);
@@ -361,13 +395,26 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
     QGridLayout *layout = new QGridLayout();
     dialog.setLayout(layout);
 
+    QComboBox *nState = NULL;
     QLineEdit *nReference = NULL;
     QLineEdit *nDescription = NULL;
     QComboBox *nClient = NULL;
     QCalendarWidget *nDate = NULL;
 
     int lrow = 0;
-    if(column == PHEADER_REFERENCE) {
+    if(column == PHEADER_STATE) {
+        nState = new QComboBox();
+        nState->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        nState->addItem(tr("Pending"));
+        nState->addItem(tr("Sent"));
+        nState->addItem(tr("Accepted"));
+        nState->addItem(tr("Declined"));
+        nState->setCurrentIndex((int)proposal->getState());
+
+        layout->addWidget(new QLabel(tr("State:")), lrow, 0);
+        layout->addWidget(nState, lrow++, 1);
+    }
+    else if(column == PHEADER_REFERENCE) {
         nReference = new QLineEdit(proposal->getReference());
         layout->addWidget(new QLabel(tr("Reference:")), lrow, 0);
         layout->addWidget(nReference, lrow++, 1);
@@ -384,6 +431,7 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
         for(int i = 0; i < companies.size(); ++i)
             nClient->addItem(companies[i]->getName());
         nClient->model()->sort(0);
+        nClient->setCurrentIndex(nClient->findText(proposal->getClient()));
 
         layout->addWidget(new QLabel(tr("Client:")), lrow, 0);
         layout->addWidget(nClient, lrow++, 1);
@@ -400,7 +448,10 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
     layout->addLayout(Tools::createOkCancel(&dialog), lrow, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
-        if(nReference) {
+        if(nState) {
+            proposal->setState((Proposal::State)nState->currentIndex());
+        }
+        else if(nReference) {
             if(g_project->getProposal(nReference->text()))
                 qCritical() << "A proposal with this name already exists.";
             else

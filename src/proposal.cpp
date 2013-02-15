@@ -3,6 +3,15 @@
 
 Proposal::Proposal()
 {
+    m_state = STATE_PENDING;
+}
+
+void Proposal::setState(State state)
+{
+    if(state != m_state) {
+        m_state = state;
+        g_project->setSaved(false);
+    }
 }
 
 void Proposal::setReference(const QString& reference)

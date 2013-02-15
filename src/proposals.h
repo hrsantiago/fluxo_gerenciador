@@ -32,6 +32,7 @@ public:
     Proposals();
 
     enum ProposalsTableHeader {
+        PHEADER_STATE,
         PHEADER_REFERENCE,
         PHEADER_DESCRIPTION,
         PHEADER_CLIENT,
