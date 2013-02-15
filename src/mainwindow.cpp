@@ -34,16 +34,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     // View
     QMenu *viewMenu = qMenuBar->addMenu(tr("View"));
-    m_contractsAction = viewMenu->addAction(tr("Contracts"), this, SLOT(onViewChanged()), QKeySequence("F1"));
+    m_eventsAction = viewMenu->addAction(tr("Events"), this, SLOT(onViewChanged()), QKeySequence("F1"));
+    m_eventsAction->setCheckable(true);
+    m_contractsAction = viewMenu->addAction(tr("Contracts"), this, SLOT(onViewChanged()), QKeySequence("F2"));
     m_contractsAction->setCheckable(true);
-    m_proposalsAction = viewMenu->addAction(tr("Proposals"), this, SLOT(onViewChanged()), QKeySequence("F2"));
+    m_proposalsAction = viewMenu->addAction(tr("Proposals"), this, SLOT(onViewChanged()), QKeySequence("F3"));
     m_proposalsAction->setCheckable(true);
-    m_peopleAction = viewMenu->addAction(tr("People"), this, SLOT(onViewChanged()), QKeySequence("F3"));
+    m_peopleAction = viewMenu->addAction(tr("People"), this, SLOT(onViewChanged()), QKeySequence("F5"));
     m_peopleAction->setCheckable(true);
-    m_companiesAction = viewMenu->addAction(tr("Companies"), this, SLOT(onViewChanged()), QKeySequence("F4"));
+    m_companiesAction = viewMenu->addAction(tr("Companies"), this, SLOT(onViewChanged()), QKeySequence("F6"));
     m_companiesAction->setCheckable(true);
 
     QActionGroup *viewActionGroup = new QActionGroup(this);
+    viewActionGroup->addAction(m_eventsAction);
     viewActionGroup->addAction(m_contractsAction);
     viewActionGroup->addAction(m_proposalsAction);
     viewActionGroup->addAction(m_peopleAction);
@@ -72,6 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(g_project, SIGNAL(projectUpdate()), this, SLOT(onProjectUpdate()));
 
     m_void = new QWidget();
+    m_events = new QWidget();
     m_contracts = new Contracts();
     m_proposals = new Proposals();
     connect(g_project, SIGNAL(projectLoad()), m_proposals, SLOT(onProjectLoad()));
@@ -240,6 +244,10 @@ void MainWindow::onViewChanged()
 
     if(g_project->getName().isEmpty()) {
         setCentralWidget(m_void);
+    }
+    else if(m_eventsAction->isChecked()) {
+        setCentralWidget(m_events);
+        m_events->setVisible(true);
     }
     else if(m_contractsAction->isChecked()) {
         setCentralWidget(m_contracts);

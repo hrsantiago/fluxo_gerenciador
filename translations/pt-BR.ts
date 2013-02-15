@@ -78,7 +78,7 @@
     <name>MainWindow</name>
     <message>
         <location filename="../src/mainwindow.cpp" line="13"/>
-        <location filename="../src/mainwindow.cpp" line="218"/>
+        <location filename="../src/mainwindow.cpp" line="222"/>
         <source>Manager</source>
         <translatorcomment>Gerenciador</translatorcomment>
         <translation>Gerenciador</translation>
@@ -103,7 +103,7 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="26"/>
-        <location filename="../src/mainwindow.cpp" line="199"/>
+        <location filename="../src/mainwindow.cpp" line="203"/>
         <source>Save</source>
         <translatorcomment>Salvar</translatorcomment>
         <translation>Salvar</translation>
@@ -137,41 +137,46 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="37"/>
+        <source>Events</source>
+        <translation>Eventos</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="39"/>
         <source>Contracts</source>
         <translation>Contratos</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="39"/>
+        <location filename="../src/mainwindow.cpp" line="41"/>
         <source>Proposals</source>
         <translation>Propostas</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="41"/>
+        <location filename="../src/mainwindow.cpp" line="43"/>
         <source>People</source>
         <translation>Pessoas</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="43"/>
+        <location filename="../src/mainwindow.cpp" line="45"/>
         <source>Companies</source>
         <translation>Empresas</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="54"/>
+        <location filename="../src/mainwindow.cpp" line="57"/>
         <source>Preferences</source>
         <translation>Preferências</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="55"/>
+        <location filename="../src/mainwindow.cpp" line="58"/>
         <source>Language</source>
         <translation>Idioma</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="56"/>
+        <location filename="../src/mainwindow.cpp" line="59"/>
         <source>English</source>
         <translation>Inglês</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="58"/>
+        <location filename="../src/mainwindow.cpp" line="61"/>
         <source>Portuguese</source>
         <translation>Português</translation>
     </message>
@@ -181,7 +186,7 @@
         <translation type="obsolete">Nome da empresa:</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="220"/>
+        <location filename="../src/mainwindow.cpp" line="224"/>
         <source>Manager - %1%2</source>
         <translation>Gerenciador - %1%2</translation>
     </message>
@@ -196,13 +201,13 @@
         <translation type="obsolete">Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="165"/>
+        <location filename="../src/mainwindow.cpp" line="169"/>
         <source>Open</source>
         <translation>Abrir</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="165"/>
-        <location filename="../src/mainwindow.cpp" line="199"/>
+        <location filename="../src/mainwindow.cpp" line="169"/>
+        <location filename="../src/mainwindow.cpp" line="203"/>
         <source>Data file (*.fm)</source>
         <translation>Arquivo de dados (*.fm)</translation>
     </message>
@@ -289,9 +294,13 @@
 <context>
     <name>Project</name>
     <message>
-        <location filename="../src/project.cpp" line="293"/>
         <source>Can&apos;t remove the project&apos;s company.</source>
-        <translation>Não se pode remover a empresa deste projeto.</translation>
+        <translation type="obsolete">Não se pode remover a empresa deste projeto.</translation>
+    </message>
+    <message>
+        <location filename="../src/project.cpp" line="293"/>
+        <source>It&apos;s not possible to remove this company.</source>
+        <translation>Não é possível remover esta empresa.</translation>
     </message>
 </context>
 <context>
@@ -345,6 +354,11 @@
         <translation>Unidade</translation>
     </message>
     <message>
+        <location filename="../src/proposals.cpp" line="35"/>
+        <source>Amount</source>
+        <translation>Quantidade</translation>
+    </message>
+    <message>
         <location filename="../src/proposals.cpp" line="47"/>
         <source>List of proposals:</source>
         <translation>Lista de propostas:</translation>
@@ -360,77 +374,77 @@
         <translation>Adicionar Proposta</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="232"/>
-        <location filename="../src/proposals.cpp" line="369"/>
+        <location filename="../src/proposals.cpp" line="233"/>
+        <location filename="../src/proposals.cpp" line="372"/>
         <source>Reference:</source>
         <translation>Referência:</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="236"/>
-        <location filename="../src/proposals.cpp" line="298"/>
-        <location filename="../src/proposals.cpp" line="374"/>
+        <location filename="../src/proposals.cpp" line="237"/>
+        <location filename="../src/proposals.cpp" line="300"/>
+        <location filename="../src/proposals.cpp" line="377"/>
         <source>Description:</source>
         <translation>Descrição:</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="248"/>
-        <location filename="../src/proposals.cpp" line="392"/>
+        <location filename="../src/proposals.cpp" line="249"/>
+        <location filename="../src/proposals.cpp" line="396"/>
         <source>Date:</source>
         <translation>Data:</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="266"/>
+        <location filename="../src/proposals.cpp" line="267"/>
         <source>A proposal with this reference already exists.</source>
         <translation>Uma proposta com essa referência já existe.</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="278"/>
+        <location filename="../src/proposals.cpp" line="279"/>
         <source>Remove Proposal</source>
         <translation>Remover Proposta</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="278"/>
+        <location filename="../src/proposals.cpp" line="279"/>
         <source>Do you really want to remove proposal %1?</source>
         <translation>Você realmente quer remover a proposta %1?</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="292"/>
+        <location filename="../src/proposals.cpp" line="293"/>
         <source>Add Item</source>
         <translation>Adicionar Item</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="302"/>
+        <location filename="../src/proposals.cpp" line="304"/>
         <source>Unit:</source>
         <translation>Unidade:</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="306"/>
+        <location filename="../src/proposals.cpp" line="308"/>
         <source>Price:</source>
         <translation>Preço:</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="310"/>
+        <location filename="../src/proposals.cpp" line="312"/>
         <source>Amount:</source>
         <translation>Quantidade:</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="335"/>
+        <location filename="../src/proposals.cpp" line="337"/>
         <source>Remove Item</source>
         <translation>Remover Item</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="335"/>
+        <location filename="../src/proposals.cpp" line="337"/>
         <source>Do you really want to remove item #%1?</source>
         <translation>Você realmente quer remover o item #%1?</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="356"/>
+        <location filename="../src/proposals.cpp" line="358"/>
         <source>Edit Proposal %1</source>
         <translation>Editar Proposta %1</translation>
     </message>
     <message>
-        <location filename="../src/proposals.cpp" line="240"/>
-        <location filename="../src/proposals.cpp" line="384"/>
+        <location filename="../src/proposals.cpp" line="241"/>
+        <location filename="../src/proposals.cpp" line="388"/>
         <source>Client:</source>
         <translation>Cliente:</translation>
     </message>
@@ -453,27 +467,27 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/tools.cpp" line="36"/>
+        <location filename="../src/tools.cpp" line="30"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
     <message>
-        <location filename="../src/tools.cpp" line="36"/>
+        <location filename="../src/tools.cpp" line="30"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/tools.cpp" line="48"/>
+        <location filename="../src/tools.cpp" line="42"/>
         <source>Yes</source>
         <translation>SIm</translation>
     </message>
     <message>
-        <location filename="../src/tools.cpp" line="48"/>
+        <location filename="../src/tools.cpp" line="42"/>
         <source>No</source>
         <translation>Não</translation>
     </message>
     <message>
-        <location filename="../src/tools.cpp" line="121"/>
+        <location filename="../src/tools.cpp" line="116"/>
         <source>All data must be filled correctly.</source>
         <translation>Todos os dados devem ser preenchidos corretamente.</translation>
     </message>

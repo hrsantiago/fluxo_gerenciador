@@ -39,7 +39,7 @@ public:
     bool addCompany(Company *company);
     Company *getCompany(const QString& name);
     const QVector<Company*>& getCompanies() { return m_companies; }
-    void removeCompany(const QString& name);
+    bool removeCompany(const QString& name);
 
     void setSaved(bool saved);
     bool isSaved() { return m_isSaved; }

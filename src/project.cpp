@@ -287,11 +287,11 @@ Company *Project::getCompany(const QString& name)
     return NULL;
 }
 
-void Project::removeCompany(const QString& name)
+bool Project::removeCompany(const QString& name)
 {
     if(name == m_companyName) {
-        qWarning() << tr("Can't remove the project's company.");
-        return;
+        qCritical() << tr("It's not possible to remove this company.");
+        return false;
     }
     for(int i = 0; i < m_companies.size(); ++i) {
         if(m_companies[i]->getName() == name) {
@@ -300,6 +300,7 @@ void Project::removeCompany(const QString& name)
             break;
         }
     }
+    return true;
 }
 
 void Project::setSaved(bool saved)

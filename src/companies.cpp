@@ -212,9 +212,10 @@ void Companies::onRemoveButtonClicked()
         if(Tools::requestYesNoFromUser(tr("Remove Company"), tr("Do you really want to remove this company?")) == "No")
             return;
 
-        g_project->removeCompany(currentItem->text());
-        m_list->takeItem(m_list->row(currentItem));
-        delete currentItem;
+        if(g_project->removeCompany(currentItem->text())) {
+            m_list->takeItem(m_list->row(currentItem));
+            delete currentItem;
+        }
     }
 }
 

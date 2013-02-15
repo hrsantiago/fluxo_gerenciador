@@ -27,12 +27,14 @@ private:
     QTranslator *m_translator;
     QSettings m_settings;
 
+    QAction *m_eventsAction;
     QAction *m_contractsAction;
     QAction *m_proposalsAction;
     QAction *m_peopleAction;
     QAction *m_companiesAction;
 
     QWidget *m_void;
+    QWidget *m_events;
     Contracts *m_contracts;
     Proposals *m_proposals;
     People *m_people;

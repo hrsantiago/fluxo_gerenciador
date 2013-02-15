@@ -32,7 +32,7 @@ Proposals::Proposals()
 
     m_itemsTable = new QTableWidget;
     m_itemsTable->setColumnCount(5);
-    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg(tr("#")).arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg("Amount").split(","));
+    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg(tr("#")).arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg(tr("Amount")).split(","));
     m_itemsTable->verticalHeader()->hide();
     m_itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
