@@ -1,5 +1,5 @@
 #include "companies.h"
-#include "project.h"
+#include "core/project.h"
 #include "tools.h"
 
 Companies::Companies(QWidget *parent) :

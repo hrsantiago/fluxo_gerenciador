@@ -10,31 +10,31 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = fluxo_gerenciador
 TEMPLATE = app
-
+INCLUDEPATH += src/
 
 SOURCES += src/main.cpp\
-        src/mainwindow.cpp \
-    src/project.cpp \
-    src/people.cpp \
+        src/view/mainwindow.cpp \
+    src/core/project.cpp \
+    src/view/people.cpp \
     src/tools.cpp \
-    src/proposals.cpp \
-    src/contracts.cpp \
-    src/proposal.cpp \
-    src/companies.cpp \
-    src/person.cpp \
-    src/company.cpp
+    src/view/proposals.cpp \
+    src/view/contracts.cpp \
+    src/core/proposal.cpp \
+    src/view/companies.cpp \
+    src/core/person.cpp \
+    src/core/company.cpp
 
-HEADERS  += src/mainwindow.h \
-    src/project.h \
+HEADERS  += src/view/mainwindow.h \
+    src/core/project.h \
     src/const.h \
-    src/people.h \
+    src/view/people.h \
     src/tools.h \
-    src/proposals.h \
-    src/contracts.h \
-    src/proposal.h \
-    src/companies.h \
-    src/person.h \
-    src/company.h
+    src/view/proposals.h \
+    src/view/contracts.h \
+    src/core/proposal.h \
+    src/view/companies.h \
+    src/core/person.h \
+    src/core/company.h
 
 TRANSLATIONS = translations/pt-BR.ts
 win32:RC_FILE = src/resources.rc

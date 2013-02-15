@@ -2,7 +2,7 @@
 #define PROPOSALS_H
 
 #include <QtGui>
-#include "project.h"
+#include "core/project.h"
 
 class MyTableWidgetItem : public QTableWidgetItem
 {

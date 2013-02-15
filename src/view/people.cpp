@@ -1,5 +1,5 @@
 #include "people.h"
-#include "project.h"
+#include "core/project.h"
 #include "tools.h"
 
 People::People(QWidget *parent) :

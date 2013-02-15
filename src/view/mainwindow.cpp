@@ -1,6 +1,6 @@
 #include "const.h"
 #include "mainwindow.h"
-#include "project.h"
+#include "core/project.h"
 #include "tools.h"
 
 MainWindow::MainWindow(QWidget *parent)

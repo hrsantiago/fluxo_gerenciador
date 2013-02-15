@@ -1,6 +1,6 @@
 #include "proposals.h"
 #include "tools.h"
-#include "project.h"
+#include "core/project.h"
 #include "const.h"
 
 Proposals::Proposals()

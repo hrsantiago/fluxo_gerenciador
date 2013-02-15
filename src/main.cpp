@@ -1,8 +1,6 @@
 #include "const.h"
-#include "mainwindow.h"
-#include <QApplication>
-#include <QDebug>
-#include <QMessageBox>
+#include "view/mainwindow.h"
+#include <QtGui>
 
 void messageHandler(QtMsgType type, const char *msg)
 {
