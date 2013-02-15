@@ -20,6 +20,8 @@ public:
     void setLanguage(const QString& language);
 
 private:
+    void saveSettings();
+
     QAction *m_saveAction;
     QAction *m_saveAsAction;
     QAction *m_englishAction;
@@ -41,6 +43,7 @@ private:
     Companies *m_companies;
 
 private slots:
+    void backup();
     void newFile();
     void openFile();
     void saveFile();

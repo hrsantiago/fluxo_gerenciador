@@ -25,24 +25,18 @@ Proposals::Proposals()
     m_proposalsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_proposalsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_proposalsTable->setSortingEnabled(true);
+    m_proposalsTable->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_proposalsTable, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(onProposalsCurrentCellChanged(int,int,int,int)));
     connect(m_proposalsTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(onProposalsCellDoubleClicked(int, int)));
-
-    QPushButton *addProposal = new QPushButton("+");
-    connect(addProposal, SIGNAL(clicked()), this, SLOT(onAddProposalClicked()));
-    QPushButton *removeProposal = new QPushButton("-");
-    connect(removeProposal, SIGNAL(clicked()), this, SLOT(onRemoveProposalClicked()));
+    connect(m_proposalsTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onProposalsCustomContextMenuRequested(QPoint)));
 
     QWidget *top = new QWidget;
     gLayout = new QGridLayout();
     top->setLayout(gLayout);
 
     row = 0;
-    gLayout->addWidget(new QLabel(tr("List of proposals:")), row++, 0, 1, 2);
-    gLayout->addWidget(m_proposalsTable, row, 0, 3, 1);
-    gLayout->addWidget(addProposal, row++, 1);
-    gLayout->addWidget(removeProposal, row++, 1);
-    gLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 1);
+    gLayout->addWidget(new QLabel(tr("List of proposals:")), row++, 0);
+    gLayout->addWidget(m_proposalsTable, row, 0);
 
     // Bottom
     m_itemsTable = new QTableWidget;
@@ -52,22 +46,18 @@ Proposals::Proposals()
     m_itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_itemsTable->setSortingEnabled(true);
+    m_itemsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_itemsTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onItemsCustomContextMenuRequested(QPoint)));
 
-    QPushButton *addItem = new QPushButton("+");
-    connect(addItem, SIGNAL(clicked()), this, SLOT(onAddItemClicked()));
-    QPushButton *removeItem = new QPushButton("-");
-    connect(removeItem, SIGNAL(clicked()), this, SLOT(onRemoveItemClicked()));
+    m_itemsLabel = new QLabel(tr("List of items of proposal '%1':").arg(""));
 
     QWidget *bottom = new QWidget;
     gLayout = new QGridLayout();
     bottom->setLayout(gLayout);
 
     row = 0;
-    gLayout->addWidget(new QLabel(tr("List of items:")), row++, 0, 1, 2);
-    gLayout->addWidget(m_itemsTable, row, 0, 3, 1);
-    gLayout->addWidget(addItem, row++, 1);
-    gLayout->addWidget(removeItem, row++, 1);
-    gLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 1);
+    gLayout->addWidget(m_itemsLabel, row++, 0);
+    gLayout->addWidget(m_itemsTable, row, 0);
 
     // Splitter
     QSplitter *vSplitter = new QSplitter(Qt::Vertical);
@@ -132,7 +122,9 @@ void Proposals::updateItemsList()
         return;
     }
 
-    int number;
+    m_itemsLabel->setText(tr("List of items of proposal '%1':").arg(proposal->getReference()));
+
+    int number = -1;
     QTableWidgetItem *numberItem = m_itemsTable->item(m_itemsTable->currentRow(), IHEADER_NUMBER);
     if(numberItem)
         number = numberItem->text().toInt() - 1;
@@ -294,7 +286,8 @@ void Proposals::onAddProposalClicked()
         proposal->setClient(client->currentText());
         proposal->setDate(calendar->selectedDate());
         if(g_project->addProposal(proposal)) {
-            addProposal(proposal);
+            MyTableWidgetItem *item = addProposal(proposal);
+            m_proposalsTable->setCurrentItem(item);
             m_proposalsTable->resizeColumnsToContents();
         }
         else
@@ -357,7 +350,8 @@ void Proposals::onAddItemClicked()
         item->setAmount(amountLineEdit->text().toInt());
         proposal->addItem(item);
 
-        addItem(item);
+        MyTableWidgetItem *addedItem = addItem(item);
+        m_itemsTable->setCurrentItem(addedItem);
         m_itemsTable->resizeColumnsToContents();
     }
 }
@@ -405,10 +399,10 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
     if(column == PHEADER_STATE) {
         nState = new QComboBox();
         nState->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        nState->addItem(tr("Pending"));
-        nState->addItem(tr("Sent"));
-        nState->addItem(tr("Accepted"));
-        nState->addItem(tr("Declined"));
+        nState->addItem(QIcon("resources/images/pending.png"), tr("Pending"));
+        nState->addItem(QIcon("resources/images/sent.png"), tr("Sent"));
+        nState->addItem(QIcon("resources/images/accepted.png"), tr("Accepted"));
+        nState->addItem(QIcon("resources/images/declined.png"), tr("Declined"));
         nState->setCurrentIndex((int)proposal->getState());
 
         layout->addWidget(new QLabel(tr("State:")), lrow, 0);
@@ -467,6 +461,58 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
             proposal->setDate(nDate->selectedDate());
         }
         updateProposalsList();
+    }
+}
+
+void Proposals::onProposalsCustomContextMenuRequested(QPoint pos)
+{
+    QTableWidgetItem *currentItem = m_proposalsTable->currentItem();
+    QMenu menu(this);
+    QAction *add = NULL;
+    QAction *edit = NULL;
+    QAction *remove = NULL;
+
+    add = menu.addAction(tr("Add"));
+    if(currentItem && m_proposalsTable->itemAt(pos) && currentItem->row() == m_proposalsTable->itemAt(pos)->row()) {
+        edit = menu.addAction(tr("Edit"));
+        remove = menu.addAction(tr("Remove"));
+    }
+
+    QAction *ret = menu.exec(m_proposalsTable->viewport()->mapToGlobal(pos));
+    if(ret == add) {
+        onAddProposalClicked();
+    }
+    else if(ret == edit) {
+        onProposalsCellDoubleClicked(currentItem->row(), currentItem->column());
+    }
+    else if(ret == remove) {
+        onRemoveProposalClicked();
+    }
+}
+
+void Proposals::onItemsCustomContextMenuRequested(QPoint pos)
+{
+    QTableWidgetItem *currentItem = m_itemsTable->currentItem();
+    QMenu menu(this);
+    QAction *add = NULL;
+    QAction *edit = NULL;
+    QAction *remove = NULL;
+
+    add = menu.addAction(tr("Add"));
+    if(currentItem && m_itemsTable->itemAt(pos) && currentItem->row() == m_itemsTable->itemAt(pos)->row()) {
+        edit = menu.addAction(tr("Edit"));
+        remove = menu.addAction(tr("Remove"));
+    }
+
+    QAction *ret = menu.exec(m_itemsTable->viewport()->mapToGlobal(pos));
+    if(ret == add) {
+        onAddItemClicked();
+    }
+    else if(ret == edit) {
+
+    }
+    else if(ret == remove) {
+        onRemoveItemClicked();
     }
 }
 

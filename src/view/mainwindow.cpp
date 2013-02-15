@@ -87,6 +87,9 @@ MainWindow::MainWindow(QWidget *parent)
     g_project->load(true);
 
     onViewChanged();
+
+    // Backup Save
+    QTimer::singleShot(1000, this, SLOT(backup()));
 }
 
 MainWindow::~MainWindow()
@@ -99,6 +102,9 @@ MainWindow::~MainWindow()
 
     m_void->setParent(NULL);
     delete m_void;
+
+    m_events->setParent(NULL);
+    delete m_events;
 
     m_contracts->setParent(NULL);
     delete m_contracts;
@@ -113,12 +119,16 @@ MainWindow::~MainWindow()
     delete m_companies;
 }
 
-void MainWindow::closeEvent(QCloseEvent *)
+void MainWindow::saveSettings()
 {
     m_settings.setValue("language", m_englishAction->isChecked() ? "en-US" : "pt-BR");
     m_settings.setValue("mainWindowGeometry", saveGeometry());
     m_settings.setValue("mainWindowState", saveState());
+}
 
+void MainWindow::closeEvent(QCloseEvent *)
+{
+    saveSettings();
     g_project->save(true);
 }
 
@@ -149,6 +159,13 @@ void MainWindow::setLanguage(const QString& language)
             qCritical() << "Translations not loaded.";
         QApplication::installTranslator(m_translator);
     }
+}
+
+void MainWindow::backup()
+{
+    saveSettings();
+    g_project->save(true);
+    QTimer::singleShot(1000, this, SLOT(backup()));
 }
 
 void MainWindow::newFile()

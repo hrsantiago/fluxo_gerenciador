@@ -56,6 +56,7 @@ private:
 
     QTableWidget *m_proposalsTable;
     QTableWidget *m_itemsTable;
+    QLabel *m_itemsLabel;
 
 private slots:
     void onAddProposalClicked();
@@ -65,6 +66,9 @@ private slots:
 
     void onProposalsCurrentCellChanged(int currentRow, int , int previousRow, int );
     void onProposalsCellDoubleClicked(int row, int column);
+    void onProposalsCustomContextMenuRequested(QPoint pos);
+
+    void onItemsCustomContextMenuRequested(QPoint pos);
 
     void onProjectLoad();
 
