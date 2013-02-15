@@ -49,8 +49,8 @@ public:
 private:
     void updateProposalsList();
     void updateItemsList();
-    void addProposal(Proposal *proposal);
-    void addItem(ProposalItem *item);
+    MyTableWidgetItem *addProposal(Proposal *proposal);
+    MyTableWidgetItem *addItem(ProposalItem *item);
     Proposal *getCurrentProposal();
 
     QTableWidget *m_proposalsTable;

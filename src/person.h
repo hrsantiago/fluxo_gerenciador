@@ -13,16 +13,16 @@ public:
 
     Person();
 
-    void setName(const QString& name) { m_name = name; }
+    void setName(const QString& name);
     QString getName() { return m_name; }
 
-    void setGender(Gender gender) { m_gender = gender; }
+    void setGender(Gender gender);
     Gender getGender() { return m_gender; }
 
-    void setTelephone(const QString& telephone) { m_telephone = telephone; }
+    void setTelephone(const QString& telephone);
     QString getTelephone() { return m_telephone; }
 
-    void setEmail(const QString& email) { m_email = email; }
+    void setEmail(const QString& email);
     QString getEmail() { return m_email; }
 
 private:

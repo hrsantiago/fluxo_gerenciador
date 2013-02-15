@@ -1,9 +1,7 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
-#include <QString>
-#include <QWidget>
-#include <QGridLayout>
+#include <QtGui>
 
 namespace Tools
 {

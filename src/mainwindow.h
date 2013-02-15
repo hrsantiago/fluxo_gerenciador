@@ -32,6 +32,7 @@ private:
     QAction *m_peopleAction;
     QAction *m_companiesAction;
 
+    QWidget *m_void;
     Contracts *m_contracts;
     Proposals *m_proposals;
     People *m_people;

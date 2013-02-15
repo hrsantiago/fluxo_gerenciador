@@ -71,16 +71,16 @@ MainWindow::MainWindow(QWidget *parent)
     g_project = new Project;
     connect(g_project, SIGNAL(projectUpdate()), this, SLOT(onProjectUpdate()));
 
+    m_void = new QWidget();
     m_contracts = new Contracts();
     m_proposals = new Proposals();
     connect(g_project, SIGNAL(projectLoad()), m_proposals, SLOT(onProjectLoad()));
     m_people = new People();
     connect(g_project, SIGNAL(projectLoad()), m_people, SLOT(onProjectLoad()));
     m_companies = new Companies();
+    connect(g_project, SIGNAL(projectLoad()), m_companies, SLOT(onProjectLoad()));
 
-    QString filename = QFileInfo(QFileInfo(QSettings().fileName()).absolutePath(), "project.fm").absoluteFilePath();
-    g_project->setFilename(filename);
-    g_project->load();
+    g_project->load(true);
 
     onViewChanged();
 }
@@ -92,6 +92,9 @@ MainWindow::~MainWindow()
         delete m_translator;
         m_translator = NULL;
     }
+
+    m_void->setParent(NULL);
+    delete m_void;
 
     m_contracts->setParent(NULL);
     delete m_contracts;
@@ -112,11 +115,7 @@ void MainWindow::closeEvent(QCloseEvent *)
     m_settings.setValue("mainWindowGeometry", saveGeometry());
     m_settings.setValue("mainWindowState", saveState());
 
-    m_companies->save();
-
-    QString filename = QFileInfo(QFileInfo(QSettings().fileName()).absolutePath(), "project.fm").absoluteFilePath();
-    g_project->setFilename(filename);
-    g_project->save();
+    g_project->save(true);
 }
 
 void MainWindow::setLanguage(const QString& language)
@@ -150,23 +149,13 @@ void MainWindow::setLanguage(const QString& language)
 
 void MainWindow::newFile()
 {
-    QDialog dialog;
-    dialog.setWindowTitle(tr("New"));
+    g_project->clean();
+    onViewChanged();
 
-    QGridLayout *layout = new QGridLayout();
-    dialog.setLayout(layout);
-
-    int row = 0;
-    layout->addWidget(new QLabel(tr("Company name:")), row, 0);
-    QLineEdit *nameLineEdit = new QLineEdit;
-    layout->addWidget(nameLineEdit, row++, 1);
-
-    layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
-
-    if(dialog.exec() == QDialog::Accepted) {
-        g_project->reset();
-        g_project->setName(nameLineEdit->text());
-        onProjectUpdate();
+    QString companyName = m_companies->createCompany();
+    if(!companyName.isEmpty()) {
+        g_project->create(companyName);
+        onViewChanged();
     }
 }
 
@@ -180,16 +169,18 @@ void MainWindow::openFile()
     m_settings.setValue("defaultPath", QFileInfo(filename).absolutePath());
 
     g_project->setFilename(filename);
-    g_project->load();
+    g_project->load(false);
     onProjectUpdate();
 }
 
 void MainWindow::saveFile()
 {
-    if(g_project->getFilename().isEmpty())
+    if(g_project->getFilename().isEmpty()) {
         saveFileAs();
+        return;
+    }
 
-    g_project->save();
+    g_project->save(false);
 }
 
 void MainWindow::saveFileAs()
@@ -247,7 +238,10 @@ void MainWindow::onViewChanged()
         widget->setParent(0);
     }
 
-    if(m_contractsAction->isChecked()) {
+    if(g_project->getName().isEmpty()) {
+        setCentralWidget(m_void);
+    }
+    else if(m_contractsAction->isChecked()) {
         setCentralWidget(m_contracts);
         m_contracts->setVisible(true);
     }

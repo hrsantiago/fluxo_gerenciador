@@ -1,28 +1,57 @@
 #include "project.h"
-#include <QSettings>
 
 Project *g_project = NULL;
 
 Project::Project()
 {
     g_project = this;
-    reset();
+    m_isLoading = false;
+    clean();
 }
 
-void Project::reset()
+Project::~Project()
 {
-    m_name = QString();
+    clean();
+}
+
+void Project::create(const QString& companyName)
+{
+    setName(companyName);
+    emit projectLoad();
+}
+
+void Project::clean()
+{
+    m_companyName = QString();
     m_filename = QString();
     m_isSaved = true;
+
+    for(int i = 0; i < m_proposals.size(); ++i)
+        delete m_proposals[i];
+    m_proposals.clear();
+
+    for(int i = 0; i < m_people.size(); ++i)
+        delete m_people[i];
+    m_people.clear();
+
+    for(int i = 0; i < m_companies.size(); ++i)
+        delete m_companies[i];
+    m_companies.clear();
+
+    emit projectUpdate();
 }
 
-void Project::save()
+void Project::save(bool backup)
 {
-    QSettings settings(m_filename, QSettings::IniFormat);
+    QString filename = m_filename;
+    if(backup)
+        filename = QFileInfo(QFileInfo(QSettings().fileName()).absolutePath(), "project.fm").absoluteFilePath();
+
+    QSettings settings(filename, QSettings::IniFormat);
     settings.clear();
 
     settings.beginGroup("Project");
-    settings.setValue("name", m_name);
+    settings.setValue("name", m_companyName);
 
     settings.beginGroup("Proposals");
     for(int i = 0; i < m_proposals.size(); ++i) {
@@ -30,6 +59,7 @@ void Project::save()
         settings.beginGroup(QString("Proposal%1").arg(i));
         settings.setValue("reference", m_proposals[i]->getReference());
         settings.setValue("description", m_proposals[i]->getDescription());
+        settings.setValue("client", m_proposals[i]->getClient());
         settings.setValue("date", m_proposals[i]->getDate());
 
         const QVector<ProposalItem*>& items = proposal->getItems();
@@ -57,17 +87,45 @@ void Project::save()
     }
     settings.endGroup();
 
+    settings.beginGroup("Companies");
+    for(int i = 0; i < m_companies.size(); ++i) {
+        settings.beginGroup(QString("Company%1").arg(i));
+        settings.setValue("name", m_companies[i]->getName());
+        settings.setValue("address", m_companies[i]->getAddress());
+        settings.setValue("city", m_companies[i]->getCity());
+        settings.setValue("state", m_companies[i]->getState());
+        settings.setValue("zipcode", m_companies[i]->getZipcode());
+        settings.setValue("telephone", m_companies[i]->getTelephone());
+        settings.endGroup();
+    }
     settings.endGroup();
 
-    setSaved(true);
+    settings.endGroup();
+
+    if(backup) {
+        settings.beginGroup("Backup");
+        settings.setValue("saved", isSaved());
+        settings.setValue("filename", m_filename);
+        settings.endGroup();
+    }
+    else
+        setSaved(true);
 }
 
-void Project::load()
+void Project::load(bool backup)
 {
-    QSettings settings(m_filename, QSettings::IniFormat);
+    QString filename = m_filename;
+    clean();
+    m_filename = filename;
+
+    if(backup)
+        filename = QFileInfo(QFileInfo(QSettings().fileName()).absolutePath(), "project.fm").absoluteFilePath();
+
+    m_isLoading = true;
+    QSettings settings(filename, QSettings::IniFormat);
 
     settings.beginGroup("Project");
-    m_name = settings.value("name").toString();
+    m_companyName = settings.value("name").toString();
 
     settings.beginGroup("Proposals");
     QStringList proposals = settings.childGroups();
@@ -76,6 +134,7 @@ void Project::load()
         settings.beginGroup(*it);
         proposal->setReference(settings.value("reference").toString());
         proposal->setDescription(settings.value("description").toString());
+        proposal->setClient(settings.value("client").toString());
         proposal->setDate(settings.value("date").toDate());
 
         QStringList items = settings.childGroups();
@@ -95,8 +154,8 @@ void Project::load()
     settings.endGroup();
 
     settings.beginGroup("People");
-    QStringList childGroups = settings.childGroups();
-    for(QStringList::iterator it = childGroups.begin(), end = childGroups.end(); it != end; ++it) {
+    QStringList people = settings.childGroups();
+    for(QStringList::iterator it = people.begin(), end = people.end(); it != end; ++it) {
         settings.beginGroup(*it);
         Person *person = new Person;
         person->setName(settings.value("name").toString());
@@ -108,9 +167,35 @@ void Project::load()
     }
     settings.endGroup();
 
+    settings.beginGroup("Companies");
+    QStringList companies = settings.childGroups();
+    for(QStringList::iterator it = companies.begin(), end = companies.end(); it != end; ++it) {
+        settings.beginGroup(*it);
+        Company *company = new Company;
+        company->setName(settings.value("name").toString());
+        company->setAddress(settings.value("address").toString());
+        company->setCity(settings.value("city").toString());
+        company->setState(settings.value("state").toString());
+        company->setZipcode(settings.value("zipcode").toString());
+        company->setTelephone(settings.value("telephone").toString());
+        m_companies.push_back(company);
+        settings.endGroup();
+    }
     settings.endGroup();
 
-    setSaved(true);
+    settings.endGroup();
+
+    m_isLoading = false;
+
+    if(backup) {
+        settings.beginGroup("Backup");
+        setSaved(settings.value("saved").toBool());
+        m_filename = settings.value("filename").toString();
+        settings.endGroup();
+    }
+    else
+        setSaved(true);
+
     emit projectLoad();
 }
 
@@ -177,5 +262,50 @@ void Project::removePerson(const QString& name)
             setSaved(false);
             break;
         }
+    }
+}
+
+bool Project::addCompany(Company *company)
+{
+    for(int i = 0; i < m_companies.size(); ++i) {
+        if(m_companies[i]->getName() == company->getName()) {
+            delete company;
+            return false;
+        }
+    }
+    m_companies.push_back(company);
+    setSaved(false);
+    return true;
+}
+
+Company *Project::getCompany(const QString& name)
+{
+    for(int i = 0; i < m_companies.size(); ++i) {
+        if(m_companies[i]->getName() == name)
+            return m_companies[i];
+    }
+    return NULL;
+}
+
+void Project::removeCompany(const QString& name)
+{
+    if(name == m_companyName) {
+        qWarning() << tr("Can't remove the project's company.");
+        return;
+    }
+    for(int i = 0; i < m_companies.size(); ++i) {
+        if(m_companies[i]->getName() == name) {
+            m_companies.erase(m_companies.begin()+i);
+            setSaved(false);
+            break;
+        }
+    }
+}
+
+void Project::setSaved(bool saved)
+{
+    if(!m_isLoading) {
+        m_isSaved = saved;
+        emit projectUpdate();
     }
 }

@@ -10,13 +10,16 @@ class Proposal
 public:
     Proposal();
 
-    void setReference(const QString& reference) { m_reference = reference; }
+    void setReference(const QString& reference);
     QString getReference() { return m_reference; }
 
-    void setDescription(const QString& description) { m_description = description; }
+    void setDescription(const QString& description);
     QString getDescription() { return m_description; }
 
-    void setDate(const QDate& date) { m_date = date; }
+    void setClient(const QString& client);
+    QString getClient() { return m_client; }
+
+    void setDate(const QDate& date);
     QDate getDate() { return m_date; }
 
     void addItem(ProposalItem *item);
@@ -27,6 +30,7 @@ public:
 private:
     QString m_reference;
     QString m_description;
+    QString m_client;
     QDate m_date;
     QVector<ProposalItem*> m_items;
 };
@@ -34,20 +38,25 @@ private:
 class ProposalItem
 {
 public:
+    ProposalItem() {
+        m_price = 0;
+        m_amount = 0;
+    }
+
     int getId() { return m_parent->getItemId(this); }
 
-    void setParent(Proposal *parent) { m_parent = parent; }
+    void setParent(Proposal *parent);
 
-    void setDescription(const QString& description) { m_description = description; }
+    void setDescription(const QString& description);
     QString getDescription() { return m_description; }
 
-    void setUnit(const QString& unit) { m_unit = unit; }
+    void setUnit(const QString& unit);
     QString getUnit() { return m_unit; }
 
-    void setPrice(float price) { m_price = price; }
+    void setPrice(float price);
     float getPrice() { return m_price; }
 
-    void setAmount(int amount) { m_amount = amount; }
+    void setAmount(int amount);
     int getAmount() { return m_amount; }
 
 private:
@@ -57,7 +66,5 @@ private:
     float m_price;
     int m_amount;
 };
-
-
 
 #endif // PROPOSAL_H

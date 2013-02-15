@@ -5,9 +5,11 @@
 People::People(QWidget *parent) :
     QWidget(parent)
 {
+    QGridLayout *gridLayout;
+
     // Left Widget
     QWidget *left = new QWidget;
-    QGridLayout *gridLayout = new QGridLayout();
+    gridLayout = new QGridLayout();
     gridLayout->setContentsMargins(0, 0, 0, 0);
     left->setLayout(gridLayout);
 
@@ -28,8 +30,8 @@ People::People(QWidget *parent) :
 
     // Right Widget
     QWidget *right = new QWidget;
-    m_layout = new QGridLayout();
-    right->setLayout(m_layout);
+    gridLayout = new QGridLayout();
+    right->setLayout(gridLayout);
 
     m_nameWidget = new QLineEdit();
     m_genderWidget = new QComboBox();
@@ -40,15 +42,15 @@ People::People(QWidget *parent) :
     connectWidgets();
 
     int row = 0;
-    m_layout->addWidget(new QLabel(tr("Name:")), row, 0);
-    m_layout->addWidget(m_nameWidget, row++, 1);
-    m_layout->addWidget(new QLabel(tr("Gender:")), row, 0);
-    m_layout->addWidget(m_genderWidget, row++, 1);
-    m_layout->addWidget(new QLabel(tr("Telephone:")), row, 0);
-    m_layout->addWidget(m_telephoneWidget, row++, 1);
-    m_layout->addWidget(new QLabel(tr("Email:")), row, 0);
-    m_layout->addWidget(m_emailWidget, row++, 1);
-    m_layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 0, 1, 2);
+    gridLayout->addWidget(new QLabel(tr("Name:")), row, 0);
+    gridLayout->addWidget(m_nameWidget, row++, 1);
+    gridLayout->addWidget(new QLabel(tr("Gender:")), row, 0);
+    gridLayout->addWidget(m_genderWidget, row++, 1);
+    gridLayout->addWidget(new QLabel(tr("Telephone:")), row, 0);
+    gridLayout->addWidget(m_telephoneWidget, row++, 1);
+    gridLayout->addWidget(new QLabel(tr("Email:")), row, 0);
+    gridLayout->addWidget(m_emailWidget, row++, 1);
+    gridLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 0, 1, 2);
 
     // Splitter
     QVBoxLayout *layout = new QVBoxLayout();
@@ -123,12 +125,16 @@ void People::onWidgetChanged()
     if(m_list->currentItem()) {
         QString name = m_list->currentItem()->text();
         updatePerson(name);
+
+        if(sender() && sender() == m_nameWidget) {
+            disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+            m_list->currentItem()->setText(m_nameWidget->text());
+            m_list->sortItems();
+            connect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+        }
     }
-    if(sender() && sender() == m_nameWidget) {
-        disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
-        m_list->currentItem()->setText(m_nameWidget->text());
-        m_list->sortItems();
-        connect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+    else {
+        qCritical() << tr("You need to create a person before editing.");
     }
 }
 

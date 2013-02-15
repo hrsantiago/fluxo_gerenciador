@@ -1,12 +1,15 @@
 #include "companies.h"
+#include "project.h"
 #include "tools.h"
 
 Companies::Companies(QWidget *parent) :
     QWidget(parent)
 {
+    QGridLayout *gridLayout;
+
     // Left Widget
     QWidget *left = new QWidget;
-    QGridLayout *gridLayout = new QGridLayout();
+    gridLayout = new QGridLayout();
     gridLayout->setContentsMargins(0, 0, 0, 0);
     left->setLayout(gridLayout);
 
@@ -27,17 +30,31 @@ Companies::Companies(QWidget *parent) :
 
     // Right Widget
     QWidget *right = new QWidget;
-    m_layout = new QGridLayout();
-    right->setLayout(m_layout);
+    gridLayout = new QGridLayout();
+    right->setLayout(gridLayout);
+
+    m_nameWidget = new QLineEdit();
+    m_addressWidget = new QLineEdit();
+    m_cityWidget = new QLineEdit();
+    m_stateWidget = new QLineEdit();
+    m_zipcodeWidget = new QLineEdit();
+    m_telephoneWidget = new QLineEdit();
+    connectWidgets();
 
     int row = 0;
-    m_layout->addWidget(new QLabel(tr("Name:")), row++, 0);
-    m_layout->addWidget(new QLabel(tr("Address:")), row++, 0);
-    m_layout->addWidget(new QLabel(tr("City:")), row++, 0);
-    m_layout->addWidget(new QLabel(tr("State:")), row++, 0);
-    m_layout->addWidget(new QLabel(tr("Zipcode:")), row++, 0);
-    m_layout->addWidget(new QLabel(tr("Telephone:")), row++, 0);
-    m_layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 0, 1, 2);
+    gridLayout->addWidget(new QLabel(tr("Name:")), row, 0);
+    gridLayout->addWidget(m_nameWidget, row++, 1);
+    gridLayout->addWidget(new QLabel(tr("Address:")), row, 0);
+    gridLayout->addWidget(m_addressWidget, row++, 1);
+    gridLayout->addWidget(new QLabel(tr("City:")), row, 0);
+    gridLayout->addWidget(m_cityWidget, row++, 1);
+    gridLayout->addWidget(new QLabel(tr("State:")), row, 0);
+    gridLayout->addWidget(m_stateWidget, row++, 1);
+    gridLayout->addWidget(new QLabel(tr("Zipcode:")), row, 0);
+    gridLayout->addWidget(m_zipcodeWidget, row++, 1);
+    gridLayout->addWidget(new QLabel(tr("Telephone:")), row, 0);
+    gridLayout->addWidget(m_telephoneWidget, row++, 1);
+    gridLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row++, 0, 1, 2);
 
     // Splitter
     QVBoxLayout *layout = new QVBoxLayout();
@@ -51,143 +68,157 @@ Companies::Companies(QWidget *parent) :
     hSplitter->addWidget(right);
     hSplitter->setStretchFactor(0, 30);
     hSplitter->setStretchFactor(1, 70);
-
-    load();
 }
 
-void Companies::save()
-{
-    QSettings settings("companies.ini", QSettings::IniFormat);
-    settings.clear();
-
-    settings.beginGroup("People");
-    for(int i = 0; i < m_companies.size(); ++i) {
-        settings.beginGroup(QString("Company%1").arg(i));
-        settings.setValue("name", m_companies[i].lineEdit[Company::NAME]->text());
-        settings.setValue("address", m_companies[i].lineEdit[Company::ADDRESS]->text());
-        settings.setValue("city", m_companies[i].lineEdit[Company::CITY]->text());
-        settings.setValue("state", m_companies[i].lineEdit[Company::STATE]->text());
-        settings.setValue("zipcode", m_companies[i].lineEdit[Company::ZIPCODE]->text());
-        settings.setValue("telephone", m_companies[i].lineEdit[Company::TELEPHONE]->text());
-        settings.endGroup();
-    }
-    settings.endGroup();
-}
-
-void Companies::load()
-{
-    QSettings settings("companies.ini", QSettings::IniFormat);
-
-    settings.beginGroup("People");
-    QStringList childGroups = settings.childGroups();
-    for(QStringList::iterator it = childGroups.begin(), end = childGroups.end(); it != end; ++it) {
-        settings.beginGroup(*it);
-        Company company;
-        company.lineEdit[Company::NAME]->setText(settings.value("name").toString());
-        company.lineEdit[Company::ADDRESS]->setText(settings.value("address").toString());
-        company.lineEdit[Company::CITY]->setText(settings.value("city").toString());
-        company.lineEdit[Company::STATE]->setText(settings.value("state").toString());
-        company.lineEdit[Company::ZIPCODE]->setText(settings.value("zipcode").toString());
-        company.lineEdit[Company::TELEPHONE]->setText(settings.value("telephone").toString());
-        m_companies.push_back(company);
-        settings.endGroup();
-    }
-    settings.endGroup();
-
-    updateList();
-}
-
-void Companies::updateList()
-{
-    QModelIndex currentIndex = m_list->currentIndex();
-    int count = m_list->count();
-
-    m_list->clear();
-    for(QVector<Company>::iterator it = m_companies.begin(), end = m_companies.end(); it != end; ++it)
-        m_list->addItem((*it).lineEdit[Company::NAME]->text());
-    m_list->sortItems();
-
-    if(m_list->count() == count)
-        m_list->setCurrentIndex(currentIndex);
-    else if(m_list->count() > 0)
-        m_list->setCurrentRow(0);
-}
-
-void Companies::onListItemChanged(QListWidgetItem *current, QListWidgetItem *)
-{
-    for(int i = 0; i < m_companies.size(); ++i) {
-        if(current && current->text() == m_companies[i].lineEdit[Company::NAME]->text()) {
-            for(int j = 0; j < Company::LAST; ++j) {
-                QWidget *widget = Tools::getLayoutWidget(m_layout, j, 1);
-                if(widget) {
-                    widget->hide();
-                    widget->setParent(0);
-                }
-            }
-            int row = 0;
-            m_layout->addWidget(m_companies[i].lineEdit[Company::NAME], row++, 1);
-            m_layout->addWidget(m_companies[i].lineEdit[Company::ADDRESS], row++, 1);
-            m_layout->addWidget(m_companies[i].lineEdit[Company::CITY], row++, 1);
-            m_layout->addWidget(m_companies[i].lineEdit[Company::STATE], row++, 1);
-            m_layout->addWidget(m_companies[i].lineEdit[Company::ZIPCODE], row++, 1);
-            m_layout->addWidget(m_companies[i].lineEdit[Company::TELEPHONE], row++, 1);
-            m_companies[i].lineEdit[Company::NAME]->setVisible(true);
-            m_companies[i].lineEdit[Company::ADDRESS]->setVisible(true);
-            m_companies[i].lineEdit[Company::CITY]->setVisible(true);
-            m_companies[i].lineEdit[Company::STATE]->setVisible(true);
-            m_companies[i].lineEdit[Company::ZIPCODE]->setVisible(true);
-            m_companies[i].lineEdit[Company::TELEPHONE]->setVisible(true);
-        }
-    }
-}
-
-void Companies::onAddButtonClicked()
+QString Companies::createCompany()
 {
     QMap<int, QString> defaultData;
+    defaultData[0] = "QLabel|";
 
-    QStringList a = Tools::requestDataFromUser(tr("Add Company"), tr("Name,"
+    QStringList a = Tools::requestDataFromUser(tr("Add Company"), tr("Location and contact data,"
+                                                                     "Name,"
                                                                      "Address,"
                                                                      "City,"
                                                                      "State,"
                                                                      "Zipcode,"
                                                                      "Telephone").split(","), defaultData);
     if(!Tools::isRequestedDataValid(a))
-        return;
+        return QString();
 
-    for(int i = 0; i < m_companies.size(); ++i) {
-        if(a[0] == m_companies[i].lineEdit[Company::NAME]->text()) {
-            qCritical() << tr("A company with this name already exists.");
-            return;
-        }
+    Company *company = new Company;
+    company->setName(a[0]);
+    company->setAddress(a[1]);
+    company->setCity(a[2]);
+    company->setState(a[3]);
+    company->setZipcode(a[4]);
+    company->setTelephone(a[5]);
+
+    if(!g_project->addCompany(company)) {
+        qCritical() << tr("A company with this name already exists.");
+        return QString();
     }
 
-    Company company;
-    company.lineEdit[Company::NAME]->setText(a[0]);
-    company.lineEdit[Company::ADDRESS]->setText(a[1]);
-    company.lineEdit[Company::CITY]->setText(a[2]);
-    company.lineEdit[Company::STATE]->setText(a[3]);
-    company.lineEdit[Company::ZIPCODE]->setText(a[4]);
-    company.lineEdit[Company::TELEPHONE]->setText(a[5]);
-    m_companies.push_back(company);
-
     updateList();
+    return company->getName();
+}
+
+void Companies::connectWidgets()
+{
+    connect(m_nameWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    connect(m_addressWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    connect(m_cityWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    connect(m_stateWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    connect(m_zipcodeWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    connect(m_telephoneWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+}
+
+void Companies::disconnectWidgets()
+{
+    disconnect(m_nameWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    disconnect(m_addressWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    disconnect(m_cityWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    disconnect(m_stateWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    disconnect(m_zipcodeWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+    disconnect(m_telephoneWidget, SIGNAL(textChanged(QString)), this, SLOT(onWidgetChanged()));
+}
+
+void Companies::updateList()
+{
+    QString currentName;
+    if(m_list->currentItem())
+        currentName = m_list->currentItem()->text();
+
+    QListWidgetItem *currentItem = NULL;
+
+    disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+    m_list->clear();
+    const QVector<Company*>& companies = g_project->getCompanies();
+    for(QVector<Company*>::const_iterator it = companies.constBegin(), end = companies.constEnd(); it != end; ++it) {
+        QListWidgetItem *item = new QListWidgetItem((*it)->getName());
+        m_list->addItem(item);
+
+        if((*it)->getName() == currentName)
+            currentItem = item;
+    }
+    m_list->sortItems();
+    connect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+
+    if(currentItem)
+        m_list->setCurrentItem(currentItem);
+    else if(m_list->count() > 0)
+        m_list->setCurrentRow(0);
+}
+
+void Companies::updateCompany(const QString& name)
+{
+    Company *company = g_project->getCompany(name);
+    if(company) {
+        company->setName(m_nameWidget->text());
+        company->setAddress(m_addressWidget->text());
+        company->setCity(m_cityWidget->text());
+        company->setState(m_stateWidget->text());
+        company->setZipcode(m_zipcodeWidget->text());
+        company->setTelephone(m_telephoneWidget->text());
+    }
+}
+
+void Companies::onWidgetChanged()
+{
+    if(m_list->currentItem()) {
+        QString name = m_list->currentItem()->text();
+        updateCompany(name);
+
+        if(sender() && sender() == m_nameWidget) {
+            disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+            m_list->currentItem()->setText(m_nameWidget->text());
+            m_list->sortItems();
+            connect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
+        }
+    }
+    else {
+        qCritical() << tr("You need to create a company before editing.");
+    }
+}
+
+void Companies::onListItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    if(previous) {
+        QString name = previous->text();
+        updateCompany(name);
+    }
+    if(current) {
+        QString name = current->text();
+        Company *company = g_project->getCompany(name);
+        disconnectWidgets();
+        m_nameWidget->setText(company->getName());
+        m_addressWidget->setText(company->getAddress());
+        m_cityWidget->setText(company->getCity());
+        m_stateWidget->setText(company->getState());
+        m_zipcodeWidget->setText(company->getZipcode());
+        m_telephoneWidget->setText(company->getTelephone());
+        connectWidgets();
+    }
+}
+
+void Companies::onAddButtonClicked()
+{
+    createCompany();
 }
 
 void Companies::onRemoveButtonClicked()
 {
-    if(m_list->currentItem()) {
+    QListWidgetItem *currentItem = m_list->currentItem();
+    if(currentItem) {
         if(Tools::requestYesNoFromUser(tr("Remove Company"), tr("Do you really want to remove this company?")) == "No")
             return;
 
-        QListWidgetItem *currentItem = m_list->currentItem();
-        for(int i = 0; i < m_companies.size(); ++i) {
-            if(currentItem->text() == m_companies[i].lineEdit[Company::NAME]->text()) {
-                m_companies.erase(m_companies.begin()+i);
-                break;
-            }
-        }
-        m_list->removeItemWidget(currentItem);
-
-        updateList();
+        g_project->removeCompany(currentItem->text());
+        m_list->takeItem(m_list->row(currentItem));
+        delete currentItem;
     }
+}
+
+void Companies::onProjectLoad()
+{
+    updateList();
 }

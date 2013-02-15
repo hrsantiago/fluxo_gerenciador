@@ -3,50 +3,36 @@
 
 #include <QtGui>
 
-struct Company
-{
-    enum {
-        NAME,
-        ADDRESS,
-        CITY,
-        STATE,
-        ZIPCODE,
-        TELEPHONE,
-        LINEEDIT_LAST
-    };
-    enum {
-        LAST = LINEEDIT_LAST
-    };
-
-    Company() {
-        for(int i = 0; i < LINEEDIT_LAST; ++i)
-            lineEdit[i] = new QLineEdit;
-    }
-
-    QLineEdit *lineEdit[LINEEDIT_LAST];
-};
-
 class Companies : public QWidget
 {
     Q_OBJECT
 public:
     explicit Companies(QWidget *parent = 0);
 
-    void save();
-    void load();
+    QString createCompany();
 
 private:
+    void connectWidgets();
+    void disconnectWidgets();
     void updateList();
+    void updateCompany(const QString& name);
 
-    QGridLayout *m_layout;
+    QLineEdit *m_nameWidget;
+    QLineEdit *m_addressWidget;
+    QLineEdit *m_cityWidget;
+    QLineEdit *m_stateWidget;
+    QLineEdit *m_zipcodeWidget;
+    QLineEdit *m_telephoneWidget;
+
     QListWidget *m_list;
-    QVector<Company> m_companies;
 
 private slots:
-    void onListItemChanged(QListWidgetItem *current, QListWidgetItem *);
+    void onListItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+    void onWidgetChanged();
     void onAddButtonClicked();
     void onRemoveButtonClicked();
 
+    void onProjectLoad();
 };
 
 #endif // COMPANIES_H

@@ -1,7 +1,7 @@
 #include "proposals.h"
 #include "tools.h"
 #include "project.h"
-#include <QtGui>
+#include "const.h"
 
 Proposals::Proposals()
 {
@@ -22,8 +22,9 @@ Proposals::Proposals()
 
     m_proposalsTable = new QTableWidget;
     m_proposalsTable->setColumnCount(4);
-    m_proposalsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4").arg(tr("Reference")).arg(tr("Description")).arg("Client").arg(tr("Date")).split(","));
+    m_proposalsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).split(","));
     m_proposalsTable->verticalHeader()->hide();
+    m_proposalsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_proposalsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_proposalsTable->setSortingEnabled(true);
     connect(m_proposalsTable, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(onProposalsCurrentCellChanged(int,int,int,int)));
@@ -31,8 +32,9 @@ Proposals::Proposals()
 
     m_itemsTable = new QTableWidget;
     m_itemsTable->setColumnCount(5);
-    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg(tr("#")).arg(tr("Description")).arg("Unit").arg(tr("Price")).arg("Amount").split(","));
+    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg(tr("#")).arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg("Amount").split(","));
     m_itemsTable->verticalHeader()->hide();
+    m_itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_itemsTable->setSortingEnabled(true);
 
@@ -76,21 +78,29 @@ Proposals::Proposals()
 
 void Proposals::updateProposalsList()
 {
-    const QVector<Proposal*>& proposals = g_project->getProposals();
+    QString reference;
+    QTableWidgetItem *referenceItem = m_proposalsTable->item(m_proposalsTable->currentRow(), PHEADER_REFERENCE);
+    if(referenceItem)
+        reference = referenceItem->text();
 
-    int currentRow = m_proposalsTable->currentRow();
-    int rowCount = m_proposalsTable->rowCount();
+    MyTableWidgetItem *currentItem = NULL;
 
+    m_proposalsTable->setSortingEnabled(false);
     m_proposalsTable->clearContents();
     m_proposalsTable->setRowCount(0);
+
+    const QVector<Proposal*>& proposals = g_project->getProposals();
     for(QVector<Proposal*>::const_iterator it = proposals.constBegin(), end = proposals.constEnd(); it != end; ++it) {
-        addProposal(*it);
+        MyTableWidgetItem *item = addProposal(*it);
+        if(reference == (*it)->getReference())
+            currentItem = item;
     }
-    m_proposalsTable->sortItems(PHEADER_DATE, Qt::DescendingOrder);
+
+    m_proposalsTable->setSortingEnabled(true);
     m_proposalsTable->resizeColumnsToContents();
 
-    if(m_proposalsTable->rowCount() == rowCount)
-        m_proposalsTable->selectRow(currentRow);
+    if(currentItem)
+        m_proposalsTable->selectRow(m_proposalsTable->row(currentItem));
     else if(m_proposalsTable->rowCount() > 0)
         m_proposalsTable->selectRow(0);
 
@@ -99,29 +109,41 @@ void Proposals::updateProposalsList()
 
 void Proposals::updateItemsList()
 {
-    Proposal *proposal = getCurrentProposal();
-    if(!proposal)
-        return;
-
-    const QVector<ProposalItem*>& items = proposal->getItems();
-
-    int currentRow = m_itemsTable->currentRow();
-    int rowCount = m_itemsTable->rowCount();
-
+    m_itemsTable->setSortingEnabled(false);
     m_itemsTable->clearContents();
     m_itemsTable->setRowCount(0);
-    for(int i = 0; i < items.size(); ++i)
-        addItem(items[i]);
-    m_itemsTable->sortItems(IHEADER_NUMBER);
+
+    Proposal *proposal = getCurrentProposal();
+    if(!proposal) {
+        m_itemsTable->setSortingEnabled(true);
+        m_itemsTable->resizeColumnsToContents();
+        return;
+    }
+
+    int number;
+    QTableWidgetItem *numberItem = m_itemsTable->item(m_itemsTable->currentRow(), IHEADER_NUMBER);
+    if(numberItem)
+        number = numberItem->text().toInt() - 1;
+
+    MyTableWidgetItem *currentItem = NULL;
+
+    const QVector<ProposalItem*>& items = proposal->getItems();
+    for(int i = 0; i < items.size(); ++i) {
+        MyTableWidgetItem *item = addItem(items[i]);
+        if(number == items[i]->getId())
+            currentItem = item;
+    }
+
+    m_itemsTable->setSortingEnabled(true);
     m_itemsTable->resizeColumnsToContents();
 
-    if(m_itemsTable->rowCount() == rowCount)
-        m_itemsTable->selectRow(currentRow);
+    if(currentItem)
+        m_itemsTable->selectRow(m_itemsTable->row(currentItem));
     else if(m_itemsTable->rowCount() > 0)
         m_itemsTable->selectRow(0);
 }
 
-void Proposals::addProposal(Proposal *proposal)
+MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
 {
     QLocale locale;
 
@@ -133,6 +155,10 @@ void Proposals::addProposal(Proposal *proposal)
     description->setData(Qt::DisplayRole, proposal->getDescription());
     description->setFlags(description->flags() & ~Qt::ItemIsEditable);
 
+    MyTableWidgetItem *client = new MyTableWidgetItem();
+    client->setData(Qt::DisplayRole, proposal->getClient());
+    client->setFlags(client->flags() & ~Qt::ItemIsEditable);
+
     MyTableWidgetItem *date = new MyTableWidgetItem();
     date->setData(Qt::DisplayRole, locale.toString(proposal->getDate(), "dd/MM/yyyy (dddd)"));
     date->setData(Qt::UserRole, proposal->getDate());
@@ -141,10 +167,13 @@ void Proposals::addProposal(Proposal *proposal)
     m_proposalsTable->setRowCount(m_proposalsTable->rowCount()+1);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_REFERENCE, reference);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_DESCRIPTION, description);
+    m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_CLIENT, client);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_DATE, date);
+
+    return reference;
 }
 
-void Proposals::addItem(ProposalItem *item)
+MyTableWidgetItem *Proposals::addItem(ProposalItem *item)
 {
     int id = item->getId();
 
@@ -177,6 +206,8 @@ void Proposals::addItem(ProposalItem *item)
     m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_UNIT, unit);
     m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_PRICE, price);
     m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_AMOUNT, amount);
+
+    return number;
 }
 
 Proposal *Proposals::getCurrentProposal()
@@ -193,6 +224,7 @@ void Proposals::onAddProposalClicked()
 {
     QDialog dialog;
     dialog.setWindowTitle(tr("Add Proposal"));
+    dialog.setMinimumWidth(DIALOG_MIN_WIDTH);
 
     QGridLayout *layout = new QGridLayout();
     dialog.setLayout(layout);
@@ -206,6 +238,14 @@ void Proposals::onAddProposalClicked()
     QLineEdit *descriptionLineEdit = new QLineEdit;
     layout->addWidget(descriptionLineEdit, row++, 1);
 
+    layout->addWidget(new QLabel(tr("Client:")), row, 0);
+    QComboBox *client = new QComboBox();
+    const QVector<Company*>& companies = g_project->getCompanies();
+    for(int i = 0; i < companies.size(); ++i)
+        client->addItem(companies[i]->getName());
+    client->model()->sort(0);
+    layout->addWidget(client, row++, 1);
+
     layout->addWidget(new QLabel(tr("Date:")), row, 0);
     QCalendarWidget *calendar = new QCalendarWidget();
     calendar->setGridVisible(true);
@@ -217,6 +257,7 @@ void Proposals::onAddProposalClicked()
         Proposal *proposal = new Proposal;
         proposal->setReference(referenceLineEdit->text());
         proposal->setDescription(descriptionLineEdit->text());
+        proposal->setClient(client->currentText());
         proposal->setDate(calendar->selectedDate());
         if(g_project->addProposal(proposal)) {
             addProposal(proposal);
@@ -250,6 +291,7 @@ void Proposals::onAddItemClicked()
 
     QDialog dialog;
     dialog.setWindowTitle(tr("Add Item"));
+    dialog.setMinimumWidth(DIALOG_MIN_WIDTH);
 
     QGridLayout *layout = new QGridLayout();
     dialog.setLayout(layout);
@@ -314,12 +356,14 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
 
     QDialog dialog;
     dialog.setWindowTitle(tr("Edit Proposal %1").arg(reference->text()));
+    dialog.setMinimumWidth(DIALOG_MIN_WIDTH);
 
     QGridLayout *layout = new QGridLayout();
     dialog.setLayout(layout);
 
     QLineEdit *nReference = NULL;
     QLineEdit *nDescription = NULL;
+    QComboBox *nClient = NULL;
     QCalendarWidget *nDate = NULL;
 
     int lrow = 0;
@@ -333,10 +377,22 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
         layout->addWidget(new QLabel(tr("Description:")), lrow, 0);
         layout->addWidget(nDescription, lrow++, 1);
     }
+    else if(column == PHEADER_CLIENT) {
+        nClient = new QComboBox();
+        nClient->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        const QVector<Company*>& companies = g_project->getCompanies();
+        for(int i = 0; i < companies.size(); ++i)
+            nClient->addItem(companies[i]->getName());
+        nClient->model()->sort(0);
+
+        layout->addWidget(new QLabel(tr("Client:")), lrow, 0);
+        layout->addWidget(nClient, lrow++, 1);
+    }
     else if(column == PHEADER_DATE) {
         nDate = new QCalendarWidget();
         nDate->setGridVisible(true);
         nDate->setSelectedDate(proposal->getDate());
+
         layout->addWidget(new QLabel(tr("Date:")), lrow, 0);
         layout->addWidget(nDate, lrow++, 1);
     }
@@ -353,6 +409,9 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
         else if(nDescription) {
             proposal->setDescription(nDescription->text());
         }
+        else if(nClient) {
+            proposal->setClient(nClient->currentText());
+        }
         else if(nDate) {
             proposal->setDate(nDate->selectedDate());
         }
@@ -363,4 +422,6 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
 void Proposals::onProjectLoad()
 {
     updateProposalsList();
+    m_proposalsTable->sortItems(PHEADER_DATE, Qt::DescendingOrder);
+    m_itemsTable->sortItems(IHEADER_NUMBER);
 }

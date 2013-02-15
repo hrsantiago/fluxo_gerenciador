@@ -20,7 +20,6 @@ private:
     QLineEdit *m_telephoneWidget;
     QLineEdit *m_emailWidget;
 
-    QGridLayout *m_layout;
     QListWidget *m_list;
 
 private slots:

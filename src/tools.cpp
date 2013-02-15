@@ -1,11 +1,5 @@
 #include "tools.h"
-#include <QDialog>
-#include <QPushButton>
-#include <QLabel>
-#include <QGridLayout>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QDebug>
+#include "const.h"
 
 QWidget *Tools::getLayoutWidget(QGridLayout *layout, int row, int column)
 {
@@ -56,6 +50,7 @@ QStringList Tools::requestDataFromUser(const QString &title, const QStringList& 
 {
     QDialog dialog;
     dialog.setWindowTitle(title);
+    dialog.setMinimumWidth(DIALOG_MIN_WIDTH);
 
     QGridLayout *layout = new QGridLayout();
     dialog.setLayout(layout);
