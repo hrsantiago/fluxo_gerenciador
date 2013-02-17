@@ -78,18 +78,15 @@ MainWindow::MainWindow(QWidget *parent)
     m_events = new QWidget();
     m_contracts = new Contracts();
     m_proposals = new Proposals();
-    connect(g_project, SIGNAL(projectLoad()), m_proposals, SLOT(onProjectLoad()));
     m_people = new People();
-    connect(g_project, SIGNAL(projectLoad()), m_people, SLOT(onProjectLoad()));
     m_companies = new Companies();
-    connect(g_project, SIGNAL(projectLoad()), m_companies, SLOT(onProjectLoad()));
 
     g_project->load(true);
 
     onViewChanged();
 
     // Backup Save
-    QTimer::singleShot(1000, this, SLOT(backup()));
+    QTimer::singleShot(BACKUP_TIME, this, SLOT(backup()));
 }
 
 MainWindow::~MainWindow()
@@ -165,7 +162,7 @@ void MainWindow::backup()
 {
     saveSettings();
     g_project->save(true);
-    QTimer::singleShot(1000, this, SLOT(backup()));
+    QTimer::singleShot(BACKUP_TIME, this, SLOT(backup()));
 }
 
 void MainWindow::newFile()

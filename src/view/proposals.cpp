@@ -1,4 +1,5 @@
 #include "proposals.h"
+#include "templates.h"
 #include "tools.h"
 #include "core/project.h"
 #include "const.h"
@@ -19,8 +20,8 @@ Proposals::Proposals()
 
     // Top
     m_proposalsTable = new QTableWidget;
-    m_proposalsTable->setColumnCount(5);
-    m_proposalsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("*").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).split(","));
+    m_proposalsTable->setColumnCount(6);
+    m_proposalsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5,%6").arg("*").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).arg(tr("Template")).split(","));
     m_proposalsTable->verticalHeader()->hide();
     m_proposalsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_proposalsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -41,7 +42,7 @@ Proposals::Proposals()
     // Bottom
     m_itemsTable = new QTableWidget;
     m_itemsTable->setColumnCount(5);
-    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg(tr("#")).arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg(tr("Amount")).split(","));
+    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("#").arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg(tr("Amount")).split(","));
     m_itemsTable->verticalHeader()->hide();
     m_itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -70,12 +71,14 @@ Proposals::Proposals()
 
 
     // Templates
-    QWidget *templates = new QWidget();
-    tabWidget->addTab(templates, tr("Templates"));
+    m_templates = new Templates();
+    tabWidget->addTab(m_templates, tr("Templates"));
 
     // Statistics
     QWidget *statistics = new QWidget();
     tabWidget->addTab(statistics, tr("Statistics"));
+
+    connect(g_project, SIGNAL(projectLoad()), this, SLOT(onProjectLoad()));
 }
 
 void Proposals::updateProposalsList()
@@ -189,12 +192,17 @@ MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
     date->setData(Qt::UserRole, proposal->getDate());
     date->setFlags(date->flags() & ~Qt::ItemIsEditable);
 
+    MyTableWidgetItem *tp = new MyTableWidgetItem();
+    tp->setData(Qt::DisplayRole, proposal->getTemplate());
+    tp->setFlags(tp->flags() & ~Qt::ItemIsEditable);
+
     m_proposalsTable->setRowCount(m_proposalsTable->rowCount()+1);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_STATE, state);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_REFERENCE, reference);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_DESCRIPTION, description);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_CLIENT, client);
     m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_DATE, date);
+    m_proposalsTable->setItem(m_proposalsTable->rowCount()-1, PHEADER_TEMPLATE, tp);
 
     return reference;
 }
@@ -277,6 +285,14 @@ void Proposals::onAddProposalClicked()
     calendar->setGridVisible(true);
     layout->addWidget(calendar, row++, 1);
 
+    layout->addWidget(new QLabel(tr("Template:")), row, 0);
+    QComboBox *tp = new QComboBox();
+    const QVector<Template*>& templates = g_project->getTemplates();
+    for(int i = 0; i < templates.size(); ++i)
+        tp->addItem(templates[i]->getName());
+    tp->model()->sort(0);
+    layout->addWidget(tp, row++, 1);
+
     layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
@@ -285,6 +301,7 @@ void Proposals::onAddProposalClicked()
         proposal->setDescription(descriptionLineEdit->text());
         proposal->setClient(client->currentText());
         proposal->setDate(calendar->selectedDate());
+        proposal->setTemplate(tp->currentText());
         if(g_project->addProposal(proposal)) {
             MyTableWidgetItem *item = addProposal(proposal);
             m_proposalsTable->setCurrentItem(item);
@@ -394,6 +411,7 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
     QLineEdit *nDescription = NULL;
     QComboBox *nClient = NULL;
     QCalendarWidget *nDate = NULL;
+    QComboBox *nTemplate = NULL;
 
     int lrow = 0;
     if(column == PHEADER_STATE) {
@@ -438,6 +456,18 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
         layout->addWidget(new QLabel(tr("Date:")), lrow, 0);
         layout->addWidget(nDate, lrow++, 1);
     }
+    else if(column == PHEADER_TEMPLATE) {
+        nTemplate = new QComboBox();
+        nTemplate->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        const QVector<Template*>& templates = g_project->getTemplates();
+        for(int i = 0; i < templates.size(); ++i)
+            nTemplate->addItem(templates[i]->getName());
+        nTemplate->model()->sort(0);
+        nTemplate->setCurrentIndex(nTemplate->findText(proposal->getTemplate()));
+
+        layout->addWidget(new QLabel(tr("Template:")), lrow, 0);
+        layout->addWidget(nTemplate, lrow++, 1);
+    }
 
     layout->addLayout(Tools::createOkCancel(&dialog), lrow, 0, 1, 2);
 
@@ -460,6 +490,9 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
         else if(nDate) {
             proposal->setDate(nDate->selectedDate());
         }
+        else if(nTemplate) {
+            proposal->setTemplate(nTemplate->currentText());
+        }
         updateProposalsList();
     }
 }
@@ -471,11 +504,13 @@ void Proposals::onProposalsCustomContextMenuRequested(QPoint pos)
     QAction *add = NULL;
     QAction *edit = NULL;
     QAction *remove = NULL;
+    QAction *view = NULL;
 
     add = menu.addAction(tr("Add"));
     if(currentItem && m_proposalsTable->itemAt(pos) && currentItem->row() == m_proposalsTable->itemAt(pos)->row()) {
         edit = menu.addAction(tr("Edit"));
         remove = menu.addAction(tr("Remove"));
+        view = menu.addAction(tr("View"));
     }
 
     QAction *ret = menu.exec(m_proposalsTable->viewport()->mapToGlobal(pos));
@@ -487,6 +522,10 @@ void Proposals::onProposalsCustomContextMenuRequested(QPoint pos)
     }
     else if(ret == remove) {
         onRemoveProposalClicked();
+    }
+    else if(ret == view) {
+        Proposal *proposal = getCurrentProposal();
+        m_templates->print(proposal);
     }
 }
 

@@ -46,6 +46,14 @@ void Proposal::setDate(const QDate& date)
     }
 }
 
+void Proposal::setTemplate(const QString& name)
+{
+    if(name != m_template) {
+        m_template = name;
+        g_project->setSaved(false);
+    }
+}
+
 void Proposal::addItem(ProposalItem *item)
 {
     item->setParent(this);

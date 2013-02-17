@@ -32,6 +32,9 @@ public:
     void setDate(const QDate& date);
     QDate getDate() { return m_date; }
 
+    void setTemplate(const QString& name);
+    QString getTemplate() { return m_template; }
+
     void addItem(ProposalItem *item);
     int getItemId(ProposalItem *item);
     const QVector<ProposalItem*>& getItems() { return m_items; }
@@ -43,6 +46,7 @@ private:
     QString m_description;
     QString m_client;
     QDate m_date;
+    QString m_template;
     QVector<ProposalItem*> m_items;
 };
 

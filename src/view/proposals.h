@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include "core/project.h"
+#include "templates.h"
 
 class MyTableWidgetItem : public QTableWidgetItem
 {
@@ -36,7 +37,8 @@ public:
         PHEADER_REFERENCE,
         PHEADER_DESCRIPTION,
         PHEADER_CLIENT,
-        PHEADER_DATE
+        PHEADER_DATE,
+        PHEADER_TEMPLATE
     };
 
     enum ItemsTableHeader {
@@ -54,6 +56,7 @@ private:
     MyTableWidgetItem *addItem(ProposalItem *item);
     Proposal *getCurrentProposal();
 
+    Templates *m_templates;
     QTableWidget *m_proposalsTable;
     QTableWidget *m_itemsTable;
     QLabel *m_itemsLabel;

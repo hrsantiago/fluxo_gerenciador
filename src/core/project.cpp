@@ -53,6 +53,25 @@ void Project::save(bool backup)
     settings.beginGroup("Project");
     settings.setValue("name", m_companyName);
 
+    saveProposals(settings);
+    savePeople(settings);
+    saveCompanies(settings);
+    saveTemplates(settings);
+
+    settings.endGroup();
+
+    if(backup) {
+        settings.beginGroup("Backup");
+        settings.setValue("saved", isSaved());
+        settings.setValue("filename", m_filename);
+        settings.endGroup();
+    }
+    else
+        setSaved(true);
+}
+
+void Project::saveProposals(QSettings& settings)
+{
     settings.beginGroup("Proposals");
     for(int i = 0; i < m_proposals.size(); ++i) {
         Proposal *proposal = m_proposals[i];
@@ -62,6 +81,7 @@ void Project::save(bool backup)
         settings.setValue("description", m_proposals[i]->getDescription());
         settings.setValue("client", m_proposals[i]->getClient());
         settings.setValue("date", m_proposals[i]->getDate());
+        settings.setValue("template", m_proposals[i]->getTemplate());
 
         const QVector<ProposalItem*>& items = proposal->getItems();
         for(int j = 0; j < items.size(); ++j) {
@@ -76,7 +96,10 @@ void Project::save(bool backup)
         settings.endGroup();
     }
     settings.endGroup();
+}
 
+void Project::savePeople(QSettings& settings)
+{
     settings.beginGroup("People");
     for(int i = 0; i < m_people.size(); ++i) {
         settings.beginGroup(QString("Person%1").arg(i));
@@ -87,7 +110,10 @@ void Project::save(bool backup)
         settings.endGroup();
     }
     settings.endGroup();
+}
 
+void Project::saveCompanies(QSettings& settings)
+{
     settings.beginGroup("Companies");
     for(int i = 0; i < m_companies.size(); ++i) {
         settings.beginGroup(QString("Company%1").arg(i));
@@ -100,17 +126,21 @@ void Project::save(bool backup)
         settings.endGroup();
     }
     settings.endGroup();
+}
 
-    settings.endGroup();
-
-    if(backup) {
-        settings.beginGroup("Backup");
-        settings.setValue("saved", isSaved());
-        settings.setValue("filename", m_filename);
+void Project::saveTemplates(QSettings& settings)
+{
+    settings.beginGroup("Templates");
+    for(int i = 0; i < m_templates.size(); ++i) {
+        settings.beginGroup(QString("Template%1").arg(i));
+        settings.setValue("name", m_templates[i]->getName());
+        settings.setValue("description", m_templates[i]->getDescription());
+        settings.setValue("header", m_templates[i]->getHeader());
+        settings.setValue("footer", m_templates[i]->getFooter());
+        settings.setValue("base", m_templates[i]->getBase());
         settings.endGroup();
     }
-    else
-        setSaved(true);
+    settings.endGroup();
 }
 
 void Project::load(bool backup)
@@ -128,6 +158,29 @@ void Project::load(bool backup)
     settings.beginGroup("Project");
     m_companyName = settings.value("name").toString();
 
+    loadProposals(settings);
+    loadPeople(settings);
+    loadCompanies(settings);
+    loadTemplates(settings);
+
+    settings.endGroup();
+
+    m_isLoading = false;
+
+    if(backup) {
+        settings.beginGroup("Backup");
+        setSaved(settings.value("saved").toBool());
+        m_filename = settings.value("filename").toString();
+        settings.endGroup();
+    }
+    else
+        setSaved(true);
+
+    emit projectLoad();
+}
+
+void Project::loadProposals(QSettings& settings)
+{
     settings.beginGroup("Proposals");
     QStringList proposals = settings.childGroups();
     for(QStringList::iterator it = proposals.begin(), end = proposals.end(); it != end; ++it) {
@@ -138,6 +191,7 @@ void Project::load(bool backup)
         proposal->setDescription(settings.value("description").toString());
         proposal->setClient(settings.value("client").toString());
         proposal->setDate(settings.value("date").toDate());
+        proposal->setTemplate(settings.value("template").toString());
 
         QStringList items = settings.childGroups();
         for(QStringList::iterator it = items.begin(), end = items.end(); it != end; ++it) {
@@ -154,7 +208,10 @@ void Project::load(bool backup)
         m_proposals.push_back(proposal);
     }
     settings.endGroup();
+}
 
+void Project::loadPeople(QSettings& settings)
+{
     settings.beginGroup("People");
     QStringList people = settings.childGroups();
     for(QStringList::iterator it = people.begin(), end = people.end(); it != end; ++it) {
@@ -168,7 +225,10 @@ void Project::load(bool backup)
         settings.endGroup();
     }
     settings.endGroup();
+}
 
+void Project::loadCompanies(QSettings& settings)
+{
     settings.beginGroup("Companies");
     QStringList companies = settings.childGroups();
     for(QStringList::iterator it = companies.begin(), end = companies.end(); it != end; ++it) {
@@ -184,21 +244,24 @@ void Project::load(bool backup)
         settings.endGroup();
     }
     settings.endGroup();
+}
 
-    settings.endGroup();
-
-    m_isLoading = false;
-
-    if(backup) {
-        settings.beginGroup("Backup");
-        setSaved(settings.value("saved").toBool());
-        m_filename = settings.value("filename").toString();
+void Project::loadTemplates(QSettings& settings)
+{
+    settings.beginGroup("Templates");
+    QStringList companies = settings.childGroups();
+    for(QStringList::iterator it = companies.begin(), end = companies.end(); it != end; ++it) {
+        settings.beginGroup(*it);
+        Template *tp = new Template;
+        tp->setName(settings.value("name").toString());
+        tp->setDescription(settings.value("description").toString());
+        tp->setHeader(settings.value("header").toString());
+        tp->setFooter(settings.value("footer").toString());
+        tp->setBase(settings.value("base").toString());
+        m_templates.push_back(tp);
         settings.endGroup();
     }
-    else
-        setSaved(true);
-
-    emit projectLoad();
+    settings.endGroup();
 }
 
 bool Project::addProposal(Proposal *proposal)
@@ -298,6 +361,40 @@ bool Project::removeCompany(const QString& name)
     for(int i = 0; i < m_companies.size(); ++i) {
         if(m_companies[i]->getName() == name) {
             m_companies.erase(m_companies.begin()+i);
+            setSaved(false);
+            break;
+        }
+    }
+    return true;
+}
+
+bool Project::addTemplate(Template *tp)
+{
+    for(int i = 0; i < m_templates.size(); ++i) {
+        if(m_templates[i]->getName() == tp->getName()) {
+            delete tp;
+            return false;
+        }
+    }
+    m_templates.push_back(tp);
+    setSaved(false);
+    return true;
+}
+
+Template *Project::getTemplate(const QString& name)
+{
+    for(int i = 0; i < m_templates.size(); ++i) {
+        if(m_templates[i]->getName() == name)
+            return m_templates[i];
+    }
+    return NULL;
+}
+
+bool Project::removeTemplate(const QString& name)
+{
+    for(int i = 0; i < m_templates.size(); ++i) {
+        if(m_templates[i]->getName() == name) {
+            m_templates.erase(m_templates.begin()+i);
             setSaved(false);
             break;
         }

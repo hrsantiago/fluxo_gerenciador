@@ -68,6 +68,8 @@ Companies::Companies(QWidget *parent) :
     hSplitter->addWidget(right);
     hSplitter->setStretchFactor(0, 30);
     hSplitter->setStretchFactor(1, 70);
+
+    connect(g_project, SIGNAL(projectLoad()), this, SLOT(onProjectLoad()));
 }
 
 QString Companies::createCompany()

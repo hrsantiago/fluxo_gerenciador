@@ -22,7 +22,9 @@ SOURCES += src/main.cpp\
     src/core/proposal.cpp \
     src/view/companies.cpp \
     src/core/person.cpp \
-    src/core/company.cpp
+    src/core/company.cpp \
+    src/view/templates.cpp \
+    src/core/template.cpp
 
 HEADERS  += src/view/mainwindow.h \
     src/core/project.h \
@@ -34,7 +36,9 @@ HEADERS  += src/view/mainwindow.h \
     src/core/proposal.h \
     src/view/companies.h \
     src/core/person.h \
-    src/core/company.h
+    src/core/company.h \
+    src/view/templates.h \
+    src/core/template.h
 
 TRANSLATIONS = translations/pt-BR.ts
 win32:RC_FILE = src/resources.rc
