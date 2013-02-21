@@ -74,25 +74,8 @@ void Project::saveProposals(QSettings& settings)
 {
     settings.beginGroup("Proposals");
     for(int i = 0; i < m_proposals.size(); ++i) {
-        Proposal *proposal = m_proposals[i];
         settings.beginGroup(QString("Proposal%1").arg(i));
-        settings.setValue("state", m_proposals[i]->getState());
-        settings.setValue("reference", m_proposals[i]->getReference());
-        settings.setValue("description", m_proposals[i]->getDescription());
-        settings.setValue("client", m_proposals[i]->getClient());
-        settings.setValue("date", m_proposals[i]->getDate());
-        settings.setValue("template", m_proposals[i]->getTemplate());
-
-        const QVector<ProposalItem*>& items = proposal->getItems();
-        for(int j = 0; j < items.size(); ++j) {
-            ProposalItem *item = items[j];
-            settings.beginGroup(QString("ProposalItem%1").arg(j));
-            settings.setValue("description", item->getDescription());
-            settings.setValue("unit", item->getUnit());
-            settings.setValue("price", item->getPrice());
-            settings.setValue("amount", item->getAmount());
-            settings.endGroup();
-        }
+        m_proposals[i]->save(settings);
         settings.endGroup();
     }
     settings.endGroup();
@@ -103,10 +86,7 @@ void Project::savePeople(QSettings& settings)
     settings.beginGroup("People");
     for(int i = 0; i < m_people.size(); ++i) {
         settings.beginGroup(QString("Person%1").arg(i));
-        settings.setValue("name", m_people[i]->getName());
-        settings.setValue("gender", m_people[i]->getGender());
-        settings.setValue("telephone", m_people[i]->getTelephone());
-        settings.setValue("email", m_people[i]->getEmail());
+        m_people[i]->save(settings);
         settings.endGroup();
     }
     settings.endGroup();
@@ -117,12 +97,7 @@ void Project::saveCompanies(QSettings& settings)
     settings.beginGroup("Companies");
     for(int i = 0; i < m_companies.size(); ++i) {
         settings.beginGroup(QString("Company%1").arg(i));
-        settings.setValue("name", m_companies[i]->getName());
-        settings.setValue("address", m_companies[i]->getAddress());
-        settings.setValue("city", m_companies[i]->getCity());
-        settings.setValue("state", m_companies[i]->getState());
-        settings.setValue("zipcode", m_companies[i]->getZipcode());
-        settings.setValue("telephone", m_companies[i]->getTelephone());
+        m_companies[i]->save(settings);
         settings.endGroup();
     }
     settings.endGroup();
@@ -133,11 +108,7 @@ void Project::saveTemplates(QSettings& settings)
     settings.beginGroup("Templates");
     for(int i = 0; i < m_templates.size(); ++i) {
         settings.beginGroup(QString("Template%1").arg(i));
-        settings.setValue("name", m_templates[i]->getName());
-        settings.setValue("description", m_templates[i]->getDescription());
-        settings.setValue("header", m_templates[i]->getHeader());
-        settings.setValue("footer", m_templates[i]->getFooter());
-        settings.setValue("base", m_templates[i]->getBase());
+        m_templates[i]->save(settings);
         settings.endGroup();
     }
     settings.endGroup();
@@ -186,24 +157,7 @@ void Project::loadProposals(QSettings& settings)
     for(QStringList::iterator it = proposals.begin(), end = proposals.end(); it != end; ++it) {
         Proposal *proposal = new Proposal;
         settings.beginGroup(*it);
-        proposal->setState((Proposal::State)settings.value("state").toInt());
-        proposal->setReference(settings.value("reference").toString());
-        proposal->setDescription(settings.value("description").toString());
-        proposal->setClient(settings.value("client").toString());
-        proposal->setDate(settings.value("date").toDate());
-        proposal->setTemplate(settings.value("template").toString());
-
-        QStringList items = settings.childGroups();
-        for(QStringList::iterator it = items.begin(), end = items.end(); it != end; ++it) {
-            ProposalItem *item = new ProposalItem;
-            settings.beginGroup(*it);
-            item->setDescription(settings.value("description").toString());
-            item->setUnit(settings.value("unit").toString());
-            item->setPrice(settings.value("price").toFloat());
-            item->setAmount(settings.value("amount").toInt());
-            settings.endGroup();
-            proposal->addItem(item);
-        }
+        proposal->load(settings);
         settings.endGroup();
         m_proposals.push_back(proposal);
     }
@@ -217,10 +171,7 @@ void Project::loadPeople(QSettings& settings)
     for(QStringList::iterator it = people.begin(), end = people.end(); it != end; ++it) {
         settings.beginGroup(*it);
         Person *person = new Person;
-        person->setName(settings.value("name").toString());
-        person->setGender((Person::Gender)settings.value("gender").toInt());
-        person->setTelephone(settings.value("telephone").toString());
-        person->setEmail(settings.value("email").toString());
+        person->load(settings);
         m_people.push_back(person);
         settings.endGroup();
     }
@@ -234,12 +185,7 @@ void Project::loadCompanies(QSettings& settings)
     for(QStringList::iterator it = companies.begin(), end = companies.end(); it != end; ++it) {
         settings.beginGroup(*it);
         Company *company = new Company;
-        company->setName(settings.value("name").toString());
-        company->setAddress(settings.value("address").toString());
-        company->setCity(settings.value("city").toString());
-        company->setState(settings.value("state").toString());
-        company->setZipcode(settings.value("zipcode").toString());
-        company->setTelephone(settings.value("telephone").toString());
+        company->load(settings);
         m_companies.push_back(company);
         settings.endGroup();
     }
@@ -253,11 +199,7 @@ void Project::loadTemplates(QSettings& settings)
     for(QStringList::iterator it = companies.begin(), end = companies.end(); it != end; ++it) {
         settings.beginGroup(*it);
         Template *tp = new Template;
-        tp->setName(settings.value("name").toString());
-        tp->setDescription(settings.value("description").toString());
-        tp->setHeader(settings.value("header").toString());
-        tp->setFooter(settings.value("footer").toString());
-        tp->setBase(settings.value("base").toString());
+        tp->load(settings);
         m_templates.push_back(tp);
         settings.endGroup();
     }
@@ -267,7 +209,7 @@ void Project::loadTemplates(QSettings& settings)
 bool Project::addProposal(Proposal *proposal)
 {
     for(int i = 0; i < m_proposals.size(); ++i) {
-        if(m_proposals[i]->getReference() == proposal->getReference()) {
+        if(m_proposals[i]->getString("reference") == proposal->getString("reference")) {
             delete proposal;
             return false;
         }
@@ -280,7 +222,7 @@ bool Project::addProposal(Proposal *proposal)
 Proposal *Project::getProposal(const QString& reference)
 {
     for(int i = 0; i < m_proposals.size(); ++i) {
-        if(m_proposals[i]->getReference() == reference)
+        if(m_proposals[i]->getString("reference") == reference)
             return m_proposals[i];
     }
     return NULL;
@@ -289,7 +231,7 @@ Proposal *Project::getProposal(const QString& reference)
 void Project::removeProposal(const QString& reference)
 {
     for(int i = 0; i < m_proposals.size(); ++i) {
-        if(m_proposals[i]->getReference() == reference) {
+        if(m_proposals[i]->getString("reference") == reference) {
             m_proposals.erase(m_proposals.begin()+i);
             setSaved(false);
             break;
@@ -300,7 +242,7 @@ void Project::removeProposal(const QString& reference)
 bool Project::addPerson(Person *person)
 {
     for(int i = 0; i < m_people.size(); ++i) {
-        if(m_people[i]->getName() == person->getName()) {
+        if(m_people[i]->getString("name") == person->getString("name")) {
             delete person;
             return false;
         }
@@ -313,7 +255,7 @@ bool Project::addPerson(Person *person)
 Person *Project::getPerson(const QString& name)
 {
     for(int i = 0; i < m_people.size(); ++i) {
-        if(m_people[i]->getName() == name)
+        if(m_people[i]->getString("name") == name)
             return m_people[i];
     }
     return NULL;
@@ -322,7 +264,7 @@ Person *Project::getPerson(const QString& name)
 void Project::removePerson(const QString& name)
 {
     for(int i = 0; i < m_people.size(); ++i) {
-        if(m_people[i]->getName() == name) {
+        if(m_people[i]->getString("name") == name) {
             m_people.erase(m_people.begin()+i);
             setSaved(false);
             break;
@@ -333,7 +275,7 @@ void Project::removePerson(const QString& name)
 bool Project::addCompany(Company *company)
 {
     for(int i = 0; i < m_companies.size(); ++i) {
-        if(m_companies[i]->getName() == company->getName()) {
+        if(m_companies[i]->getString("name") == company->getString("name")) {
             delete company;
             return false;
         }
@@ -346,7 +288,7 @@ bool Project::addCompany(Company *company)
 Company *Project::getCompany(const QString& name)
 {
     for(int i = 0; i < m_companies.size(); ++i) {
-        if(m_companies[i]->getName() == name)
+        if(m_companies[i]->getString("name") == name)
             return m_companies[i];
     }
     return NULL;
@@ -359,7 +301,7 @@ bool Project::removeCompany(const QString& name)
         return false;
     }
     for(int i = 0; i < m_companies.size(); ++i) {
-        if(m_companies[i]->getName() == name) {
+        if(m_companies[i]->getString("name") == name) {
             m_companies.erase(m_companies.begin()+i);
             setSaved(false);
             break;
@@ -371,7 +313,7 @@ bool Project::removeCompany(const QString& name)
 bool Project::addTemplate(Template *tp)
 {
     for(int i = 0; i < m_templates.size(); ++i) {
-        if(m_templates[i]->getName() == tp->getName()) {
+        if(m_templates[i]->getString("name") == tp->getString("name")) {
             delete tp;
             return false;
         }
@@ -384,7 +326,7 @@ bool Project::addTemplate(Template *tp)
 Template *Project::getTemplate(const QString& name)
 {
     for(int i = 0; i < m_templates.size(); ++i) {
-        if(m_templates[i]->getName() == name)
+        if(m_templates[i]->getString("name") == name)
             return m_templates[i];
     }
     return NULL;
@@ -393,7 +335,7 @@ Template *Project::getTemplate(const QString& name)
 bool Project::removeTemplate(const QString& name)
 {
     for(int i = 0; i < m_templates.size(); ++i) {
-        if(m_templates[i]->getName() == name) {
+        if(m_templates[i]->getString("name") == name) {
             m_templates.erase(m_templates.begin()+i);
             setSaved(false);
             break;

@@ -86,18 +86,18 @@ Templates::Templates(QWidget *parent) :
 
 void Templates::print(Proposal *proposal)
 {
-    m_currentTemplate = g_project->getTemplate(proposal->getTemplate());
+    m_currentTemplate = g_project->getTemplate(proposal->getString("template"));
     if(!m_currentTemplate) {
         qCritical() << tr("Failed loading template.");
         return;
     }
 
-    if(m_currentTemplate->getBase().isEmpty()) {
+    if(m_currentTemplate->getString("base").isEmpty()) {
         qCritical() << tr("Templase base must be set.");
         return;
     }
 
-    QString filename = proposal->getReference();
+    QString filename = proposal->getString("reference");
     filename = filename.toLower();
     filename = filename.replace(" ", "_");
 
@@ -140,10 +140,10 @@ void Templates::updateList()
     m_list->clear();
     const QVector<Template*>& tps = g_project->getTemplates();
     for(QVector<Template*>::const_iterator it = tps.constBegin(), end = tps.constEnd(); it != end; ++it) {
-        QListWidgetItem *item = new QListWidgetItem((*it)->getName());
+        QListWidgetItem *item = new QListWidgetItem((*it)->getString("name"));
         m_list->addItem(item);
 
-        if((*it)->getName() == currentName)
+        if((*it)->getString("name") == currentName)
             currentItem = item;
     }
     m_list->sortItems();
@@ -159,11 +159,11 @@ void Templates::updateTemplate(const QString& name)
 {
     Template *tp = g_project->getTemplate(name);
     if(tp) {
-        tp->setName(m_nameWidget->text());
-        tp->setDescription(m_descriptionWidget->text());
-        tp->setHeader(m_headerWidget->text());
-        tp->setFooter(m_footerWidget->text());
-        tp->setBase(m_baseWidget->text());
+        tp->set("name", m_nameWidget->text());
+        tp->set("description", m_descriptionWidget->text());
+        tp->set("header", m_headerWidget->text());
+        tp->set("footer", m_footerWidget->text());
+        tp->set("base", m_baseWidget->text());
     }
 }
 
@@ -195,11 +195,11 @@ void Templates::onListItemChanged(QListWidgetItem *current, QListWidgetItem *pre
         QString name = current->text();
         Template *tp = g_project->getTemplate(name);
         disconnectWidgets();
-        m_nameWidget->setText(tp->getName());
-        m_descriptionWidget->setText(tp->getDescription());
-        m_headerWidget->setText(tp->getHeader());
-        m_footerWidget->setText(tp->getFooter());
-        m_baseWidget->setText(tp->getBase());
+        m_nameWidget->setText(tp->getString("name"));
+        m_descriptionWidget->setText(tp->getString("description"));
+        m_headerWidget->setText(tp->getString("header"));
+        m_footerWidget->setText(tp->getString("footer"));
+        m_baseWidget->setText(tp->getString("base"));
         connectWidgets();
     }
 }
@@ -212,8 +212,8 @@ void Templates::onAddButtonClicked()
         return;
 
     Template *tp = new Template;
-    tp->setName(a[0]);
-    tp->setDescription(a[1]);
+    tp->set("name", a[0]);
+    tp->set("description", a[1]);
 
     if(g_project->addTemplate(tp))
         updateList();
@@ -259,8 +259,8 @@ void Templates::printPreview(QPrinter *printer)
     // Header
     QTextDocument header;
     QSizeF headerSize(0, 0);
-    if(!m_currentTemplate->getHeader().isEmpty()) {
-        QFile headerFile(m_currentTemplate->getHeader());
+    if(!m_currentTemplate->getString("header").isEmpty()) {
+        QFile headerFile(m_currentTemplate->getString("header"));
         if(!headerFile.open(QIODevice::ReadOnly | QIODevice::Text))
             return;
         QByteArray headerContent = headerFile.readAll();
@@ -274,8 +274,8 @@ void Templates::printPreview(QPrinter *printer)
     // Footer
     QTextDocument footer;
     QSizeF footerSize(0, 0);
-    if(!m_currentTemplate->getFooter().isEmpty()) {
-        QFile footerFile(m_currentTemplate->getFooter());
+    if(!m_currentTemplate->getString("footer").isEmpty()) {
+        QFile footerFile(m_currentTemplate->getString("footer"));
         if(!footerFile.open(QIODevice::ReadOnly | QIODevice::Text))
             return;
         QByteArray footerContent = footerFile.readAll();
@@ -288,7 +288,7 @@ void Templates::printPreview(QPrinter *printer)
     }
 
     // Base
-    QFile baseFile(m_currentTemplate->getBase());
+    QFile baseFile(m_currentTemplate->getString("base"));
     if(!baseFile.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
     QByteArray baseContent = baseFile.readAll();

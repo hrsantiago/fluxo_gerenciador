@@ -88,12 +88,12 @@ QString Companies::createCompany()
         return QString();
 
     Company *company = new Company;
-    company->setName(a[0]);
-    company->setAddress(a[1]);
-    company->setCity(a[2]);
-    company->setState(a[3]);
-    company->setZipcode(a[4]);
-    company->setTelephone(a[5]);
+    company->set("name", a[0]);
+    company->set("address", a[1]);
+    company->set("city", a[2]);
+    company->set("state", a[3]);
+    company->set("zipcode", a[4]);
+    company->set("telephone", a[5]);
 
     if(!g_project->addCompany(company)) {
         qCritical() << tr("A company with this name already exists.");
@@ -101,7 +101,7 @@ QString Companies::createCompany()
     }
 
     updateList();
-    return company->getName();
+    return company->getString("name");
 }
 
 void Companies::connectWidgets()
@@ -136,10 +136,10 @@ void Companies::updateList()
     m_list->clear();
     const QVector<Company*>& companies = g_project->getCompanies();
     for(QVector<Company*>::const_iterator it = companies.constBegin(), end = companies.constEnd(); it != end; ++it) {
-        QListWidgetItem *item = new QListWidgetItem((*it)->getName());
+        QListWidgetItem *item = new QListWidgetItem((*it)->getString("name"));
         m_list->addItem(item);
 
-        if((*it)->getName() == currentName)
+        if((*it)->getString("name") == currentName)
             currentItem = item;
     }
     m_list->sortItems();
@@ -155,12 +155,12 @@ void Companies::updateCompany(const QString& name)
 {
     Company *company = g_project->getCompany(name);
     if(company) {
-        company->setName(m_nameWidget->text());
-        company->setAddress(m_addressWidget->text());
-        company->setCity(m_cityWidget->text());
-        company->setState(m_stateWidget->text());
-        company->setZipcode(m_zipcodeWidget->text());
-        company->setTelephone(m_telephoneWidget->text());
+        company->set("name", m_nameWidget->text());
+        company->set("address", m_addressWidget->text());
+        company->set("city", m_cityWidget->text());
+        company->set("state", m_stateWidget->text());
+        company->set("zipcode", m_zipcodeWidget->text());
+        company->set("telephone", m_telephoneWidget->text());
     }
 }
 
@@ -192,12 +192,12 @@ void Companies::onListItemChanged(QListWidgetItem *current, QListWidgetItem *pre
         QString name = current->text();
         Company *company = g_project->getCompany(name);
         disconnectWidgets();
-        m_nameWidget->setText(company->getName());
-        m_addressWidget->setText(company->getAddress());
-        m_cityWidget->setText(company->getCity());
-        m_stateWidget->setText(company->getState());
-        m_zipcodeWidget->setText(company->getZipcode());
-        m_telephoneWidget->setText(company->getTelephone());
+        m_nameWidget->setText(company->getString("name"));
+        m_addressWidget->setText(company->getString("address"));
+        m_cityWidget->setText(company->getString("city"));
+        m_stateWidget->setText(company->getString("state"));
+        m_zipcodeWidget->setText(company->getString("zipcode"));
+        m_telephoneWidget->setText(company->getString("telephone"));
         connectWidgets();
     }
 }

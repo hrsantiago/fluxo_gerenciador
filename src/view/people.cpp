@@ -96,10 +96,10 @@ void People::updateList()
     m_list->clear();
     const QVector<Person*>& people = g_project->getPeople();
     for(QVector<Person*>::const_iterator it = people.constBegin(), end = people.constEnd(); it != end; ++it) {
-        QListWidgetItem *item = new QListWidgetItem((*it)->getName());
+        QListWidgetItem *item = new QListWidgetItem((*it)->getString("name"));
         m_list->addItem(item);
 
-        if((*it)->getName() == currentName)
+        if((*it)->getString("name") == currentName)
             currentItem = item;
     }
     m_list->sortItems();
@@ -115,10 +115,10 @@ void People::updatePerson(const QString& name)
 {
     Person *person = g_project->getPerson(name);
     if(person) {
-        person->setName(m_nameWidget->text());
-        person->setGender((Person::Gender)m_genderWidget->currentIndex());
-        person->setTelephone(m_telephoneWidget->text());
-        person->setEmail(m_emailWidget->text());
+        person->set("name", m_nameWidget->text());
+        person->set("gender", m_genderWidget->currentIndex());
+        person->set("telephone", m_telephoneWidget->text());
+        person->set("email", m_emailWidget->text());
     }
 }
 
@@ -150,10 +150,10 @@ void People::onListItemChanged(QListWidgetItem *current, QListWidgetItem *previo
         QString name = current->text();
         Person *person = g_project->getPerson(name);
         disconnectWidgets();
-        m_nameWidget->setText(person->getName());
-        m_genderWidget->setCurrentIndex((int)person->getGender());
-        m_telephoneWidget->setText(person->getTelephone());
-        m_emailWidget->setText(person->getEmail());
+        m_nameWidget->setText(person->getString("name"));
+        m_genderWidget->setCurrentIndex(person->getInt("gender"));
+        m_telephoneWidget->setText(person->getString("telephone"));
+        m_emailWidget->setText(person->getString("email"));
         connectWidgets();
     }
 }
@@ -173,10 +173,10 @@ void People::onAddButtonClicked()
         return;
 
     Person *person = new Person;
-    person->setName(a[0]);
-    person->setGender((Person::Gender)a[1].split("|")[1].toInt());
-    person->setTelephone(a[2]);
-    person->setEmail(a[3]);
+    person->set("name", a[0]);
+    person->set("gender", a[1].split("|")[1].toInt());
+    person->set("telephone", a[2]);
+    person->set("email", a[3]);
 
     if(g_project->addPerson(person))
         updateList();

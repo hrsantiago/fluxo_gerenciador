@@ -3,54 +3,31 @@
 
 Proposal::Proposal()
 {
-    m_state = STATE_PENDING;
+    set("state", STATE_PENDING);
 }
 
-void Proposal::setState(State state)
+void Proposal::save(QSettings& settings)
 {
-    if(state != m_state) {
-        m_state = state;
-        g_project->setSaved(false);
+    Thing::save(settings);
+
+    for(int i = 0; i < m_items.size(); ++i) {
+        settings.beginGroup(QString("ProposalItem%1").arg(i));
+        m_items[i]->save(settings);
+        settings.endGroup();
     }
 }
 
-void Proposal::setReference(const QString& reference)
+void Proposal::load(QSettings& settings)
 {
-    if(reference != m_reference) {
-        m_reference = reference;
-        g_project->setSaved(false);
-    }
-}
+    Thing::load(settings);
 
-void Proposal::setDescription(const QString& description)
-{
-    if(description != m_description) {
-        m_description = description;
-        g_project->setSaved(false);
-    }
-}
-
-void Proposal::setClient(const QString& client)
-{
-    if(client != m_client) {
-        m_client = client;
-        g_project->setSaved(false);
-    }
-}
-
-void Proposal::setDate(const QDate& date)
-{
-    if(date != m_date) {
-        m_date = date;
-        g_project->setSaved(false);
-    }
-}
-
-void Proposal::setTemplate(const QString& name)
-{
-    if(name != m_template) {
-        m_template = name;
-        g_project->setSaved(false);
+    QStringList items = settings.childGroups();
+    for(QStringList::iterator it = items.begin(), end = items.end(); it != end; ++it) {
+        ProposalItem *item = new ProposalItem;
+        settings.beginGroup(*it);
+        item->load(settings);
+        settings.endGroup();
+        addItem(item);
     }
 }
 
@@ -79,37 +56,4 @@ void Proposal::removeItem(int id)
 void ProposalItem::setParent(Proposal *parent)
 {
     m_parent = parent;
-    //g_project->setSaved(false);
-}
-
-void ProposalItem::setDescription(const QString& description)
-{
-    if(description != m_description) {
-        m_description = description;
-        g_project->setSaved(false);
-    }
-}
-
-void ProposalItem::setUnit(const QString& unit)
-{
-    if(unit != m_unit) {
-        m_unit = unit;
-        g_project->setSaved(false);
-    }
-}
-
-void ProposalItem::setPrice(float price)
-{
-    if(price != m_price) {
-        m_price = price;
-        g_project->setSaved(false);
-    }
-}
-
-void ProposalItem::setAmount(int amount)
-{
-    if(amount != m_amount) {
-        m_amount = amount;
-        g_project->setSaved(false);
-    }
 }

@@ -97,7 +97,7 @@ void Proposals::updateProposalsList()
     const QVector<Proposal*>& proposals = g_project->getProposals();
     for(QVector<Proposal*>::const_iterator it = proposals.constBegin(), end = proposals.constEnd(); it != end; ++it) {
         MyTableWidgetItem *item = addProposal(*it);
-        if(reference == (*it)->getReference())
+        if(reference == (*it)->getString("reference"))
             currentItem = item;
     }
 
@@ -125,7 +125,7 @@ void Proposals::updateItemsList()
         return;
     }
 
-    m_itemsLabel->setText(tr("List of items of proposal '%1':").arg(proposal->getReference()));
+    m_itemsLabel->setText(tr("List of items of proposal '%1':").arg(proposal->getString("reference")));
 
     int number = -1;
     QTableWidgetItem *numberItem = m_itemsTable->item(m_itemsTable->currentRow(), IHEADER_NUMBER);
@@ -155,7 +155,7 @@ MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
     QLocale locale;
 
     MyTableWidgetItem *state = new MyTableWidgetItem();
-    Proposal::State stateValue = proposal->getState();
+    Proposal::State stateValue = (Proposal::State)proposal->getInt("state");
     if(stateValue == Proposal::STATE_PENDING) {
         state->setIcon(QIcon("resources/images/pending.png"));
         state->setToolTip(tr("Pending"));
@@ -172,28 +172,28 @@ MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
         state->setIcon(QIcon("resources/images/declined.png"));
         state->setToolTip(tr("Declined"));
     }
-    state->setData(Qt::UserRole, proposal->getState());
+    state->setData(Qt::UserRole, proposal->getInt("state"));
     state->setFlags(state->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *reference = new MyTableWidgetItem();
-    reference->setData(Qt::DisplayRole, proposal->getReference());
+    reference->setData(Qt::DisplayRole, proposal->getString("reference"));
     reference->setFlags(reference->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *description = new MyTableWidgetItem();
-    description->setData(Qt::DisplayRole, proposal->getDescription());
+    description->setData(Qt::DisplayRole, proposal->getString("description"));
     description->setFlags(description->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *client = new MyTableWidgetItem();
-    client->setData(Qt::DisplayRole, proposal->getClient());
+    client->setData(Qt::DisplayRole, proposal->getString("client"));
     client->setFlags(client->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *date = new MyTableWidgetItem();
-    date->setData(Qt::DisplayRole, locale.toString(proposal->getDate(), "dd/MM/yyyy (dddd)"));
-    date->setData(Qt::UserRole, proposal->getDate());
+    date->setData(Qt::DisplayRole, locale.toString(proposal->getDate("date"), "dd/MM/yyyy (dddd)"));
+    date->setData(Qt::UserRole, proposal->getDate("date"));
     date->setFlags(date->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *tp = new MyTableWidgetItem();
-    tp->setData(Qt::DisplayRole, proposal->getTemplate());
+    tp->setData(Qt::DisplayRole, proposal->getString("template"));
     tp->setFlags(tp->flags() & ~Qt::ItemIsEditable);
 
     m_proposalsTable->setRowCount(m_proposalsTable->rowCount()+1);
@@ -217,21 +217,21 @@ MyTableWidgetItem *Proposals::addItem(ProposalItem *item)
     number->setFlags(number->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *description = new MyTableWidgetItem();
-    description->setData(Qt::DisplayRole, item->getDescription());
+    description->setData(Qt::DisplayRole, item->get("description"));
     description->setFlags(description->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *unit = new MyTableWidgetItem();
-    unit->setData(Qt::DisplayRole, item->getUnit());
+    unit->setData(Qt::DisplayRole, item->get("unit"));
     unit->setFlags(unit->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *price = new MyTableWidgetItem();
-    price->setData(Qt::DisplayRole, item->getPrice());
-    price->setData(Qt::UserRole, item->getPrice());
+    price->setData(Qt::DisplayRole, item->get("price"));
+    price->setData(Qt::UserRole, item->get("price"));
     price->setFlags(price->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *amount = new MyTableWidgetItem();
-    amount->setData(Qt::DisplayRole, item->getAmount());
-    amount->setData(Qt::UserRole, item->getAmount());
+    amount->setData(Qt::DisplayRole, item->get("amount"));
+    amount->setData(Qt::UserRole, item->get("amount"));
     amount->setFlags(amount->flags() & ~Qt::ItemIsEditable);
 
     m_itemsTable->setRowCount(m_itemsTable->rowCount()+1);
@@ -276,7 +276,7 @@ void Proposals::onAddProposalClicked()
     QComboBox *client = new QComboBox();
     const QVector<Company*>& companies = g_project->getCompanies();
     for(int i = 0; i < companies.size(); ++i)
-        client->addItem(companies[i]->getName());
+        client->addItem(companies[i]->getString("name"));
     client->model()->sort(0);
     layout->addWidget(client, row++, 1);
 
@@ -289,7 +289,7 @@ void Proposals::onAddProposalClicked()
     QComboBox *tp = new QComboBox();
     const QVector<Template*>& templates = g_project->getTemplates();
     for(int i = 0; i < templates.size(); ++i)
-        tp->addItem(templates[i]->getName());
+        tp->addItem(templates[i]->getString("name"));
     tp->model()->sort(0);
     layout->addWidget(tp, row++, 1);
 
@@ -297,11 +297,11 @@ void Proposals::onAddProposalClicked()
 
     if(dialog.exec() == QDialog::Accepted) {
         Proposal *proposal = new Proposal;
-        proposal->setReference(referenceLineEdit->text());
-        proposal->setDescription(descriptionLineEdit->text());
-        proposal->setClient(client->currentText());
-        proposal->setDate(calendar->selectedDate());
-        proposal->setTemplate(tp->currentText());
+        proposal->set("reference", referenceLineEdit->text());
+        proposal->set("description", descriptionLineEdit->text());
+        proposal->set("client", client->currentText());
+        proposal->set("date", calendar->selectedDate());
+        proposal->set("template", tp->currentText());
         if(g_project->addProposal(proposal)) {
             MyTableWidgetItem *item = addProposal(proposal);
             m_proposalsTable->setCurrentItem(item);
@@ -361,10 +361,10 @@ void Proposals::onAddItemClicked()
 
     if(dialog.exec() == QDialog::Accepted) {
         ProposalItem *item = new ProposalItem;
-        item->setDescription(descriptionLineEdit->text());
-        item->setUnit(unitLineEdit->text());
-        item->setPrice(priceLineEdit->text().toFloat());
-        item->setAmount(amountLineEdit->text().toInt());
+        item->set("description", descriptionLineEdit->text());
+        item->set("unit", unitLineEdit->text());
+        item->set("price", priceLineEdit->text().toDouble());
+        item->set("amount", amountLineEdit->text().toInt());
         proposal->addItem(item);
 
         MyTableWidgetItem *addedItem = addItem(item);
@@ -421,18 +421,18 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
         nState->addItem(QIcon("resources/images/sent.png"), tr("Sent"));
         nState->addItem(QIcon("resources/images/accepted.png"), tr("Accepted"));
         nState->addItem(QIcon("resources/images/declined.png"), tr("Declined"));
-        nState->setCurrentIndex((int)proposal->getState());
+        nState->setCurrentIndex(proposal->getInt("state"));
 
         layout->addWidget(new QLabel(tr("State:")), lrow, 0);
         layout->addWidget(nState, lrow++, 1);
     }
     else if(column == PHEADER_REFERENCE) {
-        nReference = new QLineEdit(proposal->getReference());
+        nReference = new QLineEdit(proposal->getString("reference"));
         layout->addWidget(new QLabel(tr("Reference:")), lrow, 0);
         layout->addWidget(nReference, lrow++, 1);
     }
     else if(column == PHEADER_DESCRIPTION) {
-        nDescription = new QLineEdit(proposal->getDescription());
+        nDescription = new QLineEdit(proposal->getString("description"));
         layout->addWidget(new QLabel(tr("Description:")), lrow, 0);
         layout->addWidget(nDescription, lrow++, 1);
     }
@@ -441,9 +441,9 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
         nClient->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         const QVector<Company*>& companies = g_project->getCompanies();
         for(int i = 0; i < companies.size(); ++i)
-            nClient->addItem(companies[i]->getName());
+            nClient->addItem(companies[i]->getString("name"));
         nClient->model()->sort(0);
-        nClient->setCurrentIndex(nClient->findText(proposal->getClient()));
+        nClient->setCurrentIndex(nClient->findText(proposal->getString("client")));
 
         layout->addWidget(new QLabel(tr("Client:")), lrow, 0);
         layout->addWidget(nClient, lrow++, 1);
@@ -451,7 +451,7 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
     else if(column == PHEADER_DATE) {
         nDate = new QCalendarWidget();
         nDate->setGridVisible(true);
-        nDate->setSelectedDate(proposal->getDate());
+        nDate->setSelectedDate(proposal->getDate("date"));
 
         layout->addWidget(new QLabel(tr("Date:")), lrow, 0);
         layout->addWidget(nDate, lrow++, 1);
@@ -461,9 +461,9 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
         nTemplate->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         const QVector<Template*>& templates = g_project->getTemplates();
         for(int i = 0; i < templates.size(); ++i)
-            nTemplate->addItem(templates[i]->getName());
+            nTemplate->addItem(templates[i]->getString("name"));
         nTemplate->model()->sort(0);
-        nTemplate->setCurrentIndex(nTemplate->findText(proposal->getTemplate()));
+        nTemplate->setCurrentIndex(nTemplate->findText(proposal->getString("template")));
 
         layout->addWidget(new QLabel(tr("Template:")), lrow, 0);
         layout->addWidget(nTemplate, lrow++, 1);
@@ -473,25 +473,25 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
 
     if(dialog.exec() == QDialog::Accepted) {
         if(nState) {
-            proposal->setState((Proposal::State)nState->currentIndex());
+            proposal->set("state", nState->currentIndex());
         }
         else if(nReference) {
             if(g_project->getProposal(nReference->text()))
                 qCritical() << "A proposal with this name already exists.";
             else
-                proposal->setReference(nReference->text());
+                proposal->set("reference", nReference->text());
         }
         else if(nDescription) {
-            proposal->setDescription(nDescription->text());
+            proposal->set("description", nDescription->text());
         }
         else if(nClient) {
-            proposal->setClient(nClient->currentText());
+            proposal->set("client", nClient->currentText());
         }
         else if(nDate) {
-            proposal->setDate(nDate->selectedDate());
+            proposal->set("date", nDate->selectedDate());
         }
         else if(nTemplate) {
-            proposal->setTemplate(nTemplate->currentText());
+            proposal->set("template", nTemplate->currentText());
         }
         updateProposalsList();
     }
