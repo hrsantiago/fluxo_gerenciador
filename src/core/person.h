@@ -14,6 +14,8 @@ public:
 
     Person();
 
+    QString getMainKey() { return "name"; }
+
 };
 
 #endif // PERSON_H

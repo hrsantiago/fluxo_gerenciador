@@ -9,6 +9,8 @@ class Company : public Thing
 public:
     Company();
 
+    QString getMainKey() { return "name"; }
+
 };
 
 #endif // COMPANY_H

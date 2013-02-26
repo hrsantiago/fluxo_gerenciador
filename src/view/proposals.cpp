@@ -297,6 +297,7 @@ void Proposals::onAddProposalClicked()
 
     if(dialog.exec() == QDialog::Accepted) {
         Proposal *proposal = new Proposal;
+        proposal->set("state", Proposal::STATE_PENDING);
         proposal->set("reference", referenceLineEdit->text());
         proposal->set("description", descriptionLineEdit->text());
         proposal->set("client", client->currentText());
@@ -473,25 +474,25 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
 
     if(dialog.exec() == QDialog::Accepted) {
         if(nState) {
-            proposal->set("state", nState->currentIndex());
+            proposal->set("state", nState->currentIndex(), true);
         }
         else if(nReference) {
             if(g_project->getProposal(nReference->text()))
                 qCritical() << "A proposal with this name already exists.";
             else
-                proposal->set("reference", nReference->text());
+                proposal->set("reference", nReference->text(), true);
         }
         else if(nDescription) {
-            proposal->set("description", nDescription->text());
+            proposal->set("description", nDescription->text(), true);
         }
         else if(nClient) {
-            proposal->set("client", nClient->currentText());
+            proposal->set("client", nClient->currentText(), true);
         }
         else if(nDate) {
-            proposal->set("date", nDate->selectedDate());
+            proposal->set("date", nDate->selectedDate(), true);
         }
         else if(nTemplate) {
-            proposal->set("template", nTemplate->currentText());
+            proposal->set("template", nTemplate->currentText(), true);
         }
         updateProposalsList();
     }

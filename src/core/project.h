@@ -2,6 +2,7 @@
 #define PROJECT_H
 
 #include <QtGui>
+#include "event.h"
 #include "proposal.h"
 #include "person.h"
 #include "company.h"
@@ -26,6 +27,11 @@ public:
 
     void setFilename(const QString& filename) { m_filename = filename; }
     QString getFilename() { return m_filename; }
+
+    bool addEvent(Event *event);
+    Event *getEvent(const QString& description);
+    QVector<Event*> getEvents();
+    void removeEvent(const QString& description);
 
     bool addProposal(Proposal *proposal);
     Proposal *getProposal(const QString& reference);
@@ -63,6 +69,7 @@ private:
 
     QString m_companyName;
     QString m_filename;
+    QVector<Event*> m_events;
     QVector<Proposal*> m_proposals;
     QVector<Person*> m_people;
     QVector<Company*> m_companies;

@@ -17,6 +17,9 @@ public:
     };
 
     Proposal();
+    ~Proposal();
+
+    QString getMainKey() { return "reference"; }
 
     void save(QSettings& settings);
     void load(QSettings& settings);
@@ -26,24 +29,19 @@ public:
     const QVector<ProposalItem*>& getItems() { return m_items; }
     void removeItem(int id);
 
+public slots:
+    void onSet(const QString& key, const QVariant& value);
+
 private:
-    State m_state;
-    QString m_reference;
-    QString m_description;
-    QString m_client;
-    QDate m_date;
-    QString m_template;
     QVector<ProposalItem*> m_items;
 };
 
 class ProposalItem : public Thing
 {
 public:
-    ProposalItem() {
-        set("price", 0);
-        set("amount", 0);
-    }
+    ProposalItem() {}
 
+    QString getMainKey() { return "id"; }
     int getId() { return m_parent->getItemId(this); }
 
     void setParent(Proposal *parent);

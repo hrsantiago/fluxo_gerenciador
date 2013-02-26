@@ -4,26 +4,7 @@
 #include <QtGui>
 #include "core/project.h"
 #include "templates.h"
-
-class MyTableWidgetItem : public QTableWidgetItem
-{
-public:
-    MyTableWidgetItem(int type = Type) : QTableWidgetItem(type) {}
-    ~MyTableWidgetItem () {}
-
-    bool operator<(const QTableWidgetItem& other) const
-    {
-        Q_ASSERT(tableWidget());
-        if(data(Qt::UserRole).type() == QVariant::Int && other.data(Qt::UserRole).type() == QVariant::Int)
-            return data(Qt::UserRole).toInt() < other.data(Qt::UserRole).toInt();
-        else if(data(Qt::UserRole).type() == QVariant::Double && other.data(Qt::UserRole).type() == QVariant::Double)
-            return data(Qt::UserRole).toDouble() < other.data(Qt::UserRole).toDouble();
-        else if(data(Qt::UserRole).type() == QVariant::Date && other.data(Qt::UserRole).type() == QVariant::Date)
-            return data(Qt::UserRole).toDate() < other.data(Qt::UserRole).toDate();
-
-        return data(Qt::DisplayRole).toString().toLower() < other.data(Qt::DisplayRole).toString().toLower();
-    }
-};
+#include "tools.h"
 
 class Proposals : public QWidget
 {

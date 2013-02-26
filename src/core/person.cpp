@@ -3,5 +3,4 @@
 
 Person::Person()
 {
-    set("gender", GENDER_MALE);
 }

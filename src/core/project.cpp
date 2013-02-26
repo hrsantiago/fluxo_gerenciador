@@ -26,6 +26,10 @@ void Project::clean()
     m_filename = QString();
     m_isSaved = true;
 
+    for(int i = 0; i < m_events.size(); ++i)
+        delete m_events[i];
+    m_events.clear();
+
     for(int i = 0; i < m_proposals.size(); ++i)
         delete m_proposals[i];
     m_proposals.clear();
@@ -37,6 +41,10 @@ void Project::clean()
     for(int i = 0; i < m_companies.size(); ++i)
         delete m_companies[i];
     m_companies.clear();
+
+    for(int i = 0; i < m_templates.size(); ++i)
+        delete m_templates[i];
+    m_templates.clear();
 
     emit projectUpdate();
 }
@@ -204,6 +212,60 @@ void Project::loadTemplates(QSettings& settings)
         settings.endGroup();
     }
     settings.endGroup();
+}
+
+bool Project::addEvent(Event *event)
+{
+    for(int i = 0; i < m_events.size(); ++i) {
+        if(m_events[i]->getString("description") == event->getString("description")) {
+            delete event;
+            return false;
+        }
+    }
+    m_events.push_back(event);
+    setSaved(false);
+    return true;
+}
+
+Event *Project::getEvent(const QString& description)
+{
+    for(int i = 0; i < m_events.size(); ++i) {
+        if(m_events[i]->getString("description") == description)
+            return m_events[i];
+    }
+    return NULL;
+}
+
+QVector<Event*> Project::getEvents()
+{
+    QVector<Event*> events;
+
+    events += (m_events);
+
+    for(int i = 0; i < m_proposals.size(); ++i)
+        events += m_proposals[i]->getEvents();
+
+    for(int i = 0; i < m_people.size(); ++i)
+        events += m_people[i]->getEvents();
+
+    for(int i = 0; i < m_companies.size(); ++i)
+        events += m_companies[i]->getEvents();
+
+    for(int i = 0; i < m_templates.size(); ++i)
+        events += m_templates[i]->getEvents();
+
+    return events;
+}
+
+void Project::removeEvent(const QString& description)
+{
+    for(int i = 0; i < m_events.size(); ++i) {
+        if(m_events[i]->getString("description") == description) {
+            m_events.erase(m_events.begin()+i);
+            setSaved(false);
+            break;
+        }
+    }
 }
 
 bool Project::addProposal(Proposal *proposal)

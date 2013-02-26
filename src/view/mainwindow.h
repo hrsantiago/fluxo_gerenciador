@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "events.h"
 #include "contracts.h"
 #include "proposals.h"
 #include "people.h"
@@ -36,7 +37,7 @@ private:
     QAction *m_companiesAction;
 
     QWidget *m_void;
-    QWidget *m_events;
+    Events *m_events;
     Contracts *m_contracts;
     Proposals *m_proposals;
     People *m_people;

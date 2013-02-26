@@ -8,6 +8,8 @@ class Template : public Thing
 {
 public:
     Template();
+
+    QString getMainKey() { return "name"; }
 };
 
 #endif // TEMPLATE_H

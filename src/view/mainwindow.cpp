@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     viewActionGroup->addAction(m_proposalsAction);
     viewActionGroup->addAction(m_peopleAction);
     viewActionGroup->addAction(m_companiesAction);
-    m_proposalsAction->setChecked(true);
+    m_eventsAction->setChecked(true);
 
     // Preferences
     QMenu *preferencesMenu = qMenuBar->addMenu(tr("Preferences"));
@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(g_project, SIGNAL(projectUpdate()), this, SLOT(onProjectUpdate()));
 
     m_void = new QWidget();
-    m_events = new QWidget();
+    m_events = new Events();
     m_contracts = new Contracts();
     m_proposals = new Proposals();
     m_people = new People();

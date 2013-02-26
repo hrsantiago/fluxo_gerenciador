@@ -25,7 +25,9 @@ SOURCES += src/main.cpp\
     src/core/company.cpp \
     src/view/templates.cpp \
     src/core/template.cpp \
-    src/core/thing.cpp
+    src/core/thing.cpp \
+    src/view/events.cpp \
+    src/core/event.cpp
 
 HEADERS  += src/view/mainwindow.h \
     src/core/project.h \
@@ -40,7 +42,9 @@ HEADERS  += src/view/mainwindow.h \
     src/core/company.h \
     src/view/templates.h \
     src/core/template.h \
-    src/core/thing.h
+    src/core/thing.h \
+    src/view/events.h \
+    src/core/event.h
 
 TRANSLATIONS = translations/pt-BR.ts
 win32:RC_FILE = src/resources.rc
