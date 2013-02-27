@@ -19,6 +19,7 @@ public:
     void closeEvent(QCloseEvent *);
 
     void setLanguage(const QString& language);
+    void selectThing(Thing *thing);
 
 private:
     void saveSettings();
@@ -55,5 +56,7 @@ private slots:
     void onLanguageChanged();
     void onViewChanged();
 };
+
+extern MainWindow *g_mainWindow;
 
 #endif // MAINWINDOW_H

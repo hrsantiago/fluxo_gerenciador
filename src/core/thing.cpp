@@ -37,6 +37,7 @@ void Thing::load(QSettings& settings)
         Event *event = new Event();
         settings.beginGroup(*it);
         event->load(settings);
+        event->setParent(this);
         settings.endGroup();
         m_events.push_back(event);
     }
@@ -62,6 +63,7 @@ QVariant Thing::get(const QString& key, const QVariant& def)
 
 void Thing::addEvent(Event *event)
 {
+    event->setParent(this);
     m_events.push_back(event);
     g_project->setSaved(false);
 }

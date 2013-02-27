@@ -5,12 +5,15 @@
 
 class Event;
 
-class Thing
+class Thing : public QObject
 {
+    Q_OBJECT
+
 public:
     Thing();
     virtual ~Thing();
 
+    virtual QString getName() = 0;
     virtual QString getMainKey() = 0;
 
     virtual void save(QSettings& settings);
@@ -35,5 +38,7 @@ private:
     QVector<Event*> m_events;
 
 };
+
+Q_DECLARE_METATYPE(Thing*)
 
 #endif // THING_H

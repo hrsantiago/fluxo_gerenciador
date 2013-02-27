@@ -19,12 +19,13 @@ public:
     Proposal();
     ~Proposal();
 
+    QString getName() { return "Proposal"; }
     QString getMainKey() { return "reference"; }
 
     void save(QSettings& settings);
     void load(QSettings& settings);
 
-    void addItem(ProposalItem *item);
+    void addItem(ProposalItem *item, int index = -1);
     int getItemId(ProposalItem *item);
     const QVector<ProposalItem*>& getItems() { return m_items; }
     void removeItem(int id);
@@ -39,15 +40,21 @@ private:
 class ProposalItem : public Thing
 {
 public:
-    ProposalItem() {}
+    ProposalItem() {
+        m_parent = NULL;
+    }
 
+    QString getName() { return "ProposalItem"; }
     QString getMainKey() { return "id"; }
     int getId() { return m_parent->getItemId(this); }
 
-    void setParent(Proposal *parent);
+    void setParent(Proposal *parent) { m_parent = parent; }
 
 private:
     Proposal *m_parent;
 };
+
+Q_DECLARE_METATYPE(Proposal*)
+Q_DECLARE_METATYPE(ProposalItem*)
 
 #endif // PROPOSAL_H

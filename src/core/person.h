@@ -14,8 +14,11 @@ public:
 
     Person();
 
+    QString getName() { return "Person"; }
     QString getMainKey() { return "name"; }
 
 };
+
+Q_DECLARE_METATYPE(Person*)
 
 #endif // PERSON_H

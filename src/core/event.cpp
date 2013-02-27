@@ -2,4 +2,5 @@
 
 Event::Event()
 {
+    m_parent = NULL;
 }

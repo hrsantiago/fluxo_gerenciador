@@ -42,10 +42,12 @@ void Proposal::load(QSettings& settings)
     settings.endGroup();
 }
 
-void Proposal::addItem(ProposalItem *item)
+void Proposal::addItem(ProposalItem *item, int index)
 {
+    if(index == -1)
+        index = m_items.size();
+    m_items.insert(m_items.begin()+index, item);
     item->setParent(this);
-    m_items.push_back(item);
     g_project->setSaved(false);
 }
 
@@ -86,9 +88,4 @@ void Proposal::onSet(const QString& key, const QVariant& value)
         // TODO
         // send client to contracts page
     }
-}
-
-void ProposalItem::setParent(Proposal *parent)
-{
-    m_parent = parent;
 }

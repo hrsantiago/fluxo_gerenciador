@@ -30,12 +30,15 @@ public:
         IHEADER_AMOUNT
     };
 
+    void selectProposal(Thing *proposal);
+
 private:
     void updateProposalsList();
     void updateItemsList();
     MyTableWidgetItem *addProposal(Proposal *proposal);
     MyTableWidgetItem *addItem(ProposalItem *item);
     Proposal *getCurrentProposal();
+    ProposalItem *getCurrentItem();
 
     Templates *m_templates;
     QTableWidget *m_proposalsTable;
@@ -45,7 +48,7 @@ private:
 private slots:
     void onAddProposalClicked();
     void onRemoveProposalClicked();
-    void onAddItemClicked();
+    void onAddItemClicked(int index = -1);
     void onRemoveItemClicked();
 
     void onProposalsCurrentCellChanged(int currentRow, int , int previousRow, int );

@@ -3,9 +3,13 @@
 #include "core/project.h"
 #include "tools.h"
 
+MainWindow *g_mainWindow = NULL;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    g_mainWindow = this;
+
     m_translator = NULL;
     QString savedLanguage = m_settings.value("language", "portuguese").toString();
     setLanguage(savedLanguage);
@@ -114,6 +118,8 @@ MainWindow::~MainWindow()
 
     m_companies->setParent(NULL);
     delete m_companies;
+
+    g_mainWindow = NULL;
 }
 
 void MainWindow::saveSettings()
@@ -156,6 +162,29 @@ void MainWindow::setLanguage(const QString& language)
             qCritical() << "Translations not loaded.";
         QApplication::installTranslator(m_translator);
     }
+}
+
+
+void MainWindow::selectThing(Thing *thing)
+{
+    if(!thing)
+        return;
+
+    QString name = thing->getName();
+    if(name == "Event")
+        m_eventsAction->trigger();
+    else if(name == "Contract")
+        m_contractsAction->trigger();
+    else if(name == "Proposal") {
+        m_proposals->selectProposal(thing);
+        m_proposalsAction->trigger();
+    }
+    else if(name == "ProposalItem")
+        m_proposalsAction->trigger();
+    else if(name == "Person")
+        m_peopleAction->trigger();
+    else if(name == "Company")
+        m_companiesAction->trigger();
 }
 
 void MainWindow::backup()

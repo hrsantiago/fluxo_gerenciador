@@ -114,6 +114,11 @@ void Proposals::updateProposalsList()
 
 void Proposals::updateItemsList()
 {
+    ProposalItem *item = NULL;
+    QTableWidgetItem *numberItem = m_itemsTable->item(m_itemsTable->currentRow(), IHEADER_NUMBER);
+    if(numberItem)
+        item = numberItem->data(Qt::UserRole).value<ProposalItem*>();
+
     m_itemsTable->setSortingEnabled(false);
     m_itemsTable->clearContents();
     m_itemsTable->setRowCount(0);
@@ -127,18 +132,13 @@ void Proposals::updateItemsList()
 
     m_itemsLabel->setText(tr("List of items of proposal '%1':").arg(proposal->getString("reference")));
 
-    int number = -1;
-    QTableWidgetItem *numberItem = m_itemsTable->item(m_itemsTable->currentRow(), IHEADER_NUMBER);
-    if(numberItem)
-        number = numberItem->text().toInt() - 1;
-
     MyTableWidgetItem *currentItem = NULL;
 
     const QVector<ProposalItem*>& items = proposal->getItems();
     for(int i = 0; i < items.size(); ++i) {
-        MyTableWidgetItem *item = addItem(items[i]);
-        if(number == items[i]->getId())
-            currentItem = item;
+        MyTableWidgetItem *tableItem = addItem(items[i]);
+        if(item == items[i])
+            currentItem = tableItem;
     }
 
     m_itemsTable->setSortingEnabled(true);
@@ -177,6 +177,7 @@ MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
 
     MyTableWidgetItem *reference = new MyTableWidgetItem();
     reference->setData(Qt::DisplayRole, proposal->getString("reference"));
+    reference->setData(Qt::UserRole, QVariant::fromValue(proposal));
     reference->setFlags(reference->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *description = new MyTableWidgetItem();
@@ -213,7 +214,7 @@ MyTableWidgetItem *Proposals::addItem(ProposalItem *item)
 
     MyTableWidgetItem *number = new MyTableWidgetItem();
     number->setData(Qt::DisplayRole, id+1);
-    number->setData(Qt::UserRole, id+1);
+    number->setData(Qt::UserRole, QVariant::fromValue(item));
     number->setFlags(number->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *description = new MyTableWidgetItem();
@@ -244,6 +245,17 @@ MyTableWidgetItem *Proposals::addItem(ProposalItem *item)
     return number;
 }
 
+void Proposals::selectProposal(Thing *proposal)
+{
+    for(int r = 0; r < m_proposalsTable->rowCount(); ++r) {
+        QTableWidgetItem *reference = m_proposalsTable->item(r, PHEADER_REFERENCE);
+        if(reference->data(Qt::UserRole).value<Proposal*>() == proposal) {
+            m_proposalsTable->selectRow(r);
+            return;
+        }
+    }
+}
+
 Proposal *Proposals::getCurrentProposal()
 {
     int currentRow = m_proposalsTable->currentRow();
@@ -251,7 +263,17 @@ Proposal *Proposals::getCurrentProposal()
         return NULL;
 
     QTableWidgetItem *reference = m_proposalsTable->item(currentRow, PHEADER_REFERENCE);
-    return g_project->getProposal(reference->text());
+    return reference->data(Qt::UserRole).value<Proposal*>();
+}
+
+ProposalItem *Proposals::getCurrentItem()
+{
+    int currentRow = m_itemsTable->currentRow();
+    if(currentRow == -1)
+        return NULL;
+
+    QTableWidgetItem *reference = m_itemsTable->item(currentRow, IHEADER_NUMBER);
+    return reference->data(Qt::UserRole).value<ProposalItem*>();
 }
 
 void Proposals::onAddProposalClicked()
@@ -328,7 +350,7 @@ void Proposals::onRemoveProposalClicked()
     m_proposalsTable->removeRow(currentRow);
 }
 
-void Proposals::onAddItemClicked()
+void Proposals::onAddItemClicked(int index)
 {
     Proposal *proposal = getCurrentProposal();
     if(!proposal)
@@ -366,11 +388,13 @@ void Proposals::onAddItemClicked()
         item->set("unit", unitLineEdit->text());
         item->set("price", priceLineEdit->text().toDouble());
         item->set("amount", amountLineEdit->text().toInt());
-        proposal->addItem(item);
+        proposal->addItem(item, index);
 
         MyTableWidgetItem *addedItem = addItem(item);
         m_itemsTable->setCurrentItem(addedItem);
-        m_itemsTable->resizeColumnsToContents();
+
+        // Ids must be adjusted
+        updateItemsList();
     }
 }
 
@@ -386,7 +410,8 @@ void Proposals::onRemoveItemClicked()
     Proposal *proposal = getCurrentProposal();
     proposal->removeItem(currentRow);
 
-    m_itemsTable->removeRow(currentRow);
+    // Ids must be adjusted
+    updateItemsList();
 }
 
 void Proposals::onProposalsCurrentCellChanged(int currentRow, int, int previousRow, int)
@@ -515,16 +540,16 @@ void Proposals::onProposalsCustomContextMenuRequested(QPoint pos)
     }
 
     QAction *ret = menu.exec(m_proposalsTable->viewport()->mapToGlobal(pos));
-    if(ret == add) {
+    if(add && ret == add) {
         onAddProposalClicked();
     }
-    else if(ret == edit) {
+    else if(edit && ret == edit) {
         onProposalsCellDoubleClicked(currentItem->row(), currentItem->column());
     }
-    else if(ret == remove) {
+    else if(remove && ret == remove) {
         onRemoveProposalClicked();
     }
-    else if(ret == view) {
+    else if(view && ret == view) {
         Proposal *proposal = getCurrentProposal();
         m_templates->print(proposal);
     }
@@ -535,23 +560,33 @@ void Proposals::onItemsCustomContextMenuRequested(QPoint pos)
     QTableWidgetItem *currentItem = m_itemsTable->currentItem();
     QMenu menu(this);
     QAction *add = NULL;
+    QAction *addBefore = NULL;
+    QAction *addAfter = NULL;
     QAction *edit = NULL;
     QAction *remove = NULL;
 
     add = menu.addAction(tr("Add"));
     if(currentItem && m_itemsTable->itemAt(pos) && currentItem->row() == m_itemsTable->itemAt(pos)->row()) {
+        addBefore = menu.addAction(tr("Add before #%1").arg(currentItem->row()+1));
+        addAfter = menu.addAction(tr("Add after #%1").arg(currentItem->row()+1));
         edit = menu.addAction(tr("Edit"));
         remove = menu.addAction(tr("Remove"));
     }
 
     QAction *ret = menu.exec(m_itemsTable->viewport()->mapToGlobal(pos));
-    if(ret == add) {
+    if(add &&ret == add) {
         onAddItemClicked();
     }
-    else if(ret == edit) {
+    else if(addBefore && ret == addBefore) {
+        onAddItemClicked(currentItem->row());
+    }
+    else if(addAfter && ret == addAfter) {
+        onAddItemClicked(currentItem->row()+1);
+    }
+    else if(edit && ret == edit) {
 
     }
-    else if(ret == remove) {
+    else if(remove && ret == remove) {
         onRemoveItemClicked();
     }
 }

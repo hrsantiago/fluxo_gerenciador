@@ -21,6 +21,7 @@ public:
 
 private:
     void updateEventsList();
+    Event *getCurrentEvent();
     MyTableWidgetItem *addEvent(Event *event);
 
     QLabel *m_dateTimeLabel;
@@ -29,6 +30,7 @@ private:
 private slots:
     //void onAddEventClicked();
     //void onRemoveEventClicked();
+    void onEventsCustomContextMenuRequested(QPoint pos);
 
     void onUpdateDateTime();
     void onProjectLoad();

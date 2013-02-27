@@ -1,4 +1,5 @@
 #include "events.h"
+#include "mainwindow.h"
 
 Events::Events(QWidget *parent) :
     QWidget(parent)
@@ -25,7 +26,7 @@ Events::Events(QWidget *parent) :
     m_eventsTable->setContextMenuPolicy(Qt::CustomContextMenu);
     //connect(m_eventsTable, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(onProposalsCurrentCellChanged(int,int,int,int)));
     //connect(m_eventsTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(onProposalsCellDoubleClicked(int, int)));
-    //connect(m_eventsTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onProposalsCustomContextMenuRequested(QPoint)));
+    connect(m_eventsTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onEventsCustomContextMenuRequested(QPoint)));
     gridLayout->addWidget(m_eventsTable, row++, 0, 1, 3);
 
     onUpdateDateTime();
@@ -61,6 +62,16 @@ void Events::updateEventsList()
         m_eventsTable->selectRow(0);
 }
 
+Event *Events::getCurrentEvent()
+{
+    int currentRow = m_eventsTable->currentRow();
+    if(currentRow == -1)
+        return NULL;
+
+    QTableWidgetItem *identifier = m_eventsTable->item(currentRow, HEADER_IDENTIFIER);
+    return identifier->data(Qt::UserRole).value<Event*>();
+}
+
 MyTableWidgetItem *Events::addEvent(Event *event)
 {
     QLocale locale;
@@ -89,6 +100,7 @@ MyTableWidgetItem *Events::addEvent(Event *event)
 
     MyTableWidgetItem *identifier = new MyTableWidgetItem();
     identifier->setData(Qt::DisplayRole, identifierStr);
+    identifier->setData(Qt::UserRole, QVariant::fromValue(event));
     identifier->setFlags(identifier->flags() & ~Qt::ItemIsEditable);
 
     m_eventsTable->setRowCount(m_eventsTable->rowCount()+1);
@@ -97,6 +109,44 @@ MyTableWidgetItem *Events::addEvent(Event *event)
     m_eventsTable->setItem(m_eventsTable->rowCount()-1, HEADER_IDENTIFIER, identifier);
 
     return description;
+}
+
+void Events::onEventsCustomContextMenuRequested(QPoint pos)
+{
+    QMenu menu(this);
+    QAction *add = NULL;
+    QAction *edit = NULL;
+    QAction *remove = NULL;
+    QAction *goToIdentifier = NULL;
+
+    add = menu.addAction(tr("Add"));
+
+    Event *event = getCurrentEvent();
+    if(event) {
+        if(!event->getParent())
+            edit = menu.addAction(tr("Edit"));
+
+        remove = menu.addAction(tr("Remove"));
+
+        if(event->getParent()) {
+            menu.addSeparator();
+            goToIdentifier = menu.addAction(tr("Go to identifier..."));
+        }
+    }
+
+    QAction *ret = menu.exec(m_eventsTable->viewport()->mapToGlobal(pos));
+    if(add &&ret == add) {
+        //onAddProposalClicked();
+    }
+    else if(edit && ret == edit) {
+        //onProposalsCellDoubleClicked(currentItem->row(), currentItem->column());
+    }
+    else if(remove && ret == remove) {
+        //onRemoveProposalClicked();
+    }
+    else if(goToIdentifier && ret == goToIdentifier) {
+        g_mainWindow->selectThing(event->getParent());
+    }
 }
 
 void Events::onUpdateDateTime()

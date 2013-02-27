@@ -9,7 +9,10 @@ class Template : public Thing
 public:
     Template();
 
+    QString getName() { return "Template"; }
     QString getMainKey() { return "name"; }
 };
+
+Q_DECLARE_METATYPE(Template*)
 
 #endif // TEMPLATE_H
