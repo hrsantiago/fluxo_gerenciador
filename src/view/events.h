@@ -1,9 +1,9 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
-#include <QtGui>
+#include "headers.h"
 #include "tools.h"
-#include <core/project.h>
+#include "core/project.h"
 
 class Events : public QWidget
 {

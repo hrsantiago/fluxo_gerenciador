@@ -1,11 +1,13 @@
 #ifndef COMPANY_H
 #define COMPANY_H
 
-#include <QtGui>
+#include "headers.h"
 #include "thing.h"
 
 class Company : public Thing
 {
+    Q_OBJECT
+
 public:
     Company();
 

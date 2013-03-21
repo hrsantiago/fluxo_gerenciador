@@ -5,6 +5,8 @@
 
 class Event : public Thing
 {
+    Q_OBJECT
+
 public:
     Event();
 

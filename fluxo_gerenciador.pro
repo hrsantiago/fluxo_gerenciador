@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = fluxo_gerenciador
 TEMPLATE = app
@@ -44,7 +44,8 @@ HEADERS  += src/view/mainwindow.h \
     src/core/template.h \
     src/core/thing.h \
     src/view/events.h \
-    src/core/event.h
+    src/core/event.h \
+    src/headers.h
 
 TRANSLATIONS = translations/pt-BR.ts
 win32:RC_FILE = src/resources.rc

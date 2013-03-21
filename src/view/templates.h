@@ -1,7 +1,7 @@
 #ifndef TEMPLATES_H
 #define TEMPLATES_H
 
-#include <QtGui>
+#include "headers.h"
 #include "core/proposal.h"
 #include "core/template.h"
 

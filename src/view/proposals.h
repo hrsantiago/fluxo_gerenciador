@@ -1,7 +1,7 @@
 #ifndef PROPOSALS_H
 #define PROPOSALS_H
 
-#include <QtGui>
+#include "headers.h"
 #include "core/project.h"
 #include "templates.h"
 #include "tools.h"

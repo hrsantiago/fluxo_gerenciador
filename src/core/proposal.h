@@ -1,13 +1,15 @@
 #ifndef PROPOSAL_H
 #define PROPOSAL_H
 
-#include <QtGui>
+#include "headers.h"
 #include "thing.h"
 
 class ProposalItem;
 
 class Proposal : public Thing
 {
+    Q_OBJECT
+
 public:
     enum State {
         STATE_PENDING,
@@ -39,6 +41,8 @@ private:
 
 class ProposalItem : public Thing
 {
+    Q_OBJECT
+
 public:
     ProposalItem() {
         m_parent = NULL;

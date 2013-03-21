@@ -1,11 +1,12 @@
 #ifndef COMPANIES_H
 #define COMPANIES_H
 
-#include <QtGui>
+#include "headers.h"
 
 class Companies : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit Companies(QWidget *parent = 0);
 

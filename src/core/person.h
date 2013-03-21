@@ -1,11 +1,13 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-#include <QtGui>
+#include "headers.h"
 #include "thing.h"
 
 class Person : public Thing
 {
+    Q_OBJECT
+
 public:
     enum Gender {
         GENDER_MALE,

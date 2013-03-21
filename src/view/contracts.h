@@ -1,7 +1,7 @@
 #ifndef CONTRACTS_H
 #define CONTRACTS_H
 
-#include <QWidget>
+#include "headers.h"
 
 class Contracts : public QWidget
 {

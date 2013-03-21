@@ -1,7 +1,7 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
-#include <QtGui>
+#include "headers.h"
 
 class MyTableWidgetItem : public QTableWidgetItem
 {

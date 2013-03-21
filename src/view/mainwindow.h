@@ -6,7 +6,7 @@
 #include "proposals.h"
 #include "people.h"
 #include "companies.h"
-#include <QtGui>
+#include "headers.h"
 
 class MainWindow : public QMainWindow
 {

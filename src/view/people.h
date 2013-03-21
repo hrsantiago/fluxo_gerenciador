@@ -1,7 +1,7 @@
 #ifndef PEOPLE_H
 #define PEOPLE_H
 
-#include <QtGui>
+#include "headers.h"
 
 class People : public QWidget
 {

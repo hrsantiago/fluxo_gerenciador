@@ -1,11 +1,13 @@
 #ifndef TEMPLATE_H
 #define TEMPLATE_H
 
-#include <QtGui>
+#include "headers.h"
 #include "thing.h"
 
 class Template : public Thing
 {
+    Q_OBJECT
+
 public:
     Template();
 

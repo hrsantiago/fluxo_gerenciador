@@ -1,7 +1,7 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
-#include <QtGui>
+#include "headers.h"
 #include "event.h"
 #include "proposal.h"
 #include "person.h"

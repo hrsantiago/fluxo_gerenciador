@@ -1,7 +1,7 @@
 #ifndef THING_H
 #define THING_H
 
-#include <QtGui>
+#include "headers.h"
 
 class Event;
 
