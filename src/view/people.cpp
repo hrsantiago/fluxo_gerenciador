@@ -94,8 +94,8 @@ void People::updateList()
 
     disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
     m_list->clear();
-    const QVector<Person*>& people = g_project->getPeople();
-    for(QVector<Person*>::const_iterator it = people.constBegin(), end = people.constEnd(); it != end; ++it) {
+    const QVector<Thing*>& people = g_project->getThings("Person");
+    for(QVector<Thing*>::const_iterator it = people.constBegin(), end = people.constEnd(); it != end; ++it) {
         QListWidgetItem *item = new QListWidgetItem((*it)->getString("name"));
         m_list->addItem(item);
 
@@ -113,7 +113,7 @@ void People::updateList()
 
 void People::updatePerson(const QString& name)
 {
-    Person *person = g_project->getPerson(name);
+    Person *person = (Person*)g_project->getThing("Person", name);
     if(person) {
         person->set("name", m_nameWidget->text());
         person->set("gender", m_genderWidget->currentIndex());
@@ -148,7 +148,7 @@ void People::onListItemChanged(QListWidgetItem *current, QListWidgetItem *previo
     }
     if(current) {
         QString name = current->text();
-        Person *person = g_project->getPerson(name);
+        Person *person = (Person*)g_project->getThing("Person", name);
         disconnectWidgets();
         m_nameWidget->setText(person->getString("name"));
         m_genderWidget->setCurrentIndex(person->getInt("gender"));
@@ -178,7 +178,7 @@ void People::onAddButtonClicked()
     person->set("telephone", a[2]);
     person->set("email", a[3]);
 
-    if(g_project->addPerson(person))
+    if(g_project->addThing(person))
         updateList();
     else
         qCritical() << tr("A person with this name already exists.");
@@ -191,7 +191,7 @@ void People::onRemoveButtonClicked()
         if(Tools::requestYesNoFromUser(tr("Remove Person"), tr("Do you really want to remove this person?")) == "No")
             return;
 
-        g_project->removePerson(currentItem->text());
+        g_project->removeThing("Person", currentItem->text());
         m_list->takeItem(m_list->row(currentItem));
         delete currentItem;
     }

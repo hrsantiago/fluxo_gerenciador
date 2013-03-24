@@ -86,7 +86,7 @@ Templates::Templates(QWidget *parent) :
 
 void Templates::print(Proposal *proposal)
 {
-    m_currentTemplate = g_project->getTemplate(proposal->getString("template"));
+    m_currentTemplate = (Template*)g_project->getThing("Template", proposal->getString("template"));
     if(!m_currentTemplate) {
         qCritical() << tr("Failed loading template.");
         return;
@@ -138,8 +138,8 @@ void Templates::updateList()
 
     disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
     m_list->clear();
-    const QVector<Template*>& tps = g_project->getTemplates();
-    for(QVector<Template*>::const_iterator it = tps.constBegin(), end = tps.constEnd(); it != end; ++it) {
+    const QVector<Thing*>& tps = g_project->getThings("Template");
+    for(QVector<Thing*>::const_iterator it = tps.constBegin(), end = tps.constEnd(); it != end; ++it) {
         QListWidgetItem *item = new QListWidgetItem((*it)->getString("name"));
         m_list->addItem(item);
 
@@ -157,7 +157,7 @@ void Templates::updateList()
 
 void Templates::updateTemplate(const QString& name)
 {
-    Template *tp = g_project->getTemplate(name);
+    Template *tp = (Template*)g_project->getThing("Template", name);
     if(tp) {
         tp->set("name", m_nameWidget->text());
         tp->set("description", m_descriptionWidget->text());
@@ -193,7 +193,7 @@ void Templates::onListItemChanged(QListWidgetItem *current, QListWidgetItem *pre
     }
     if(current) {
         QString name = current->text();
-        Template *tp = g_project->getTemplate(name);
+        Template *tp = (Template*)g_project->getThing("Template", name);
         disconnectWidgets();
         m_nameWidget->setText(tp->getString("name"));
         m_descriptionWidget->setText(tp->getString("description"));
@@ -215,7 +215,7 @@ void Templates::onAddButtonClicked()
     tp->set("name", a[0]);
     tp->set("description", a[1]);
 
-    if(g_project->addTemplate(tp))
+    if(g_project->addThing(tp))
         updateList();
     else
         qCritical() << tr("A template with this name already exists.");
@@ -228,7 +228,7 @@ void Templates::onRemoveButtonClicked()
         if(Tools::requestYesNoFromUser(tr("Remove Template"), tr("Do you really want to remove this template?")) == "No")
             return;
 
-        g_project->removeTemplate(currentItem->text());
+        g_project->removeThing("Template", currentItem->text());
         m_list->takeItem(m_list->row(currentItem));
         delete currentItem;
     }

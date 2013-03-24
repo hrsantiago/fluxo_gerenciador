@@ -94,9 +94,9 @@ void Proposals::updateProposalsList()
     m_proposalsTable->clearContents();
     m_proposalsTable->setRowCount(0);
 
-    const QVector<Proposal*>& proposals = g_project->getProposals();
-    for(QVector<Proposal*>::const_iterator it = proposals.constBegin(), end = proposals.constEnd(); it != end; ++it) {
-        MyTableWidgetItem *item = addProposal(*it);
+    const QVector<Thing*>& proposals = g_project->getThings("Proposal");
+    for(QVector<Thing*>::const_iterator it = proposals.constBegin(), end = proposals.constEnd(); it != end; ++it) {
+        MyTableWidgetItem *item = addProposal((Proposal*)*it);
         if(reference == (*it)->getString("reference"))
             currentItem = item;
     }
@@ -296,7 +296,7 @@ void Proposals::onAddProposalClicked()
 
     layout->addWidget(new QLabel(tr("Client:")), row, 0);
     QComboBox *client = new QComboBox();
-    const QVector<Company*>& companies = g_project->getCompanies();
+    const QVector<Thing*>& companies = g_project->getThings("Company");
     for(int i = 0; i < companies.size(); ++i)
         client->addItem(companies[i]->getString("name"));
     client->model()->sort(0);
@@ -309,7 +309,7 @@ void Proposals::onAddProposalClicked()
 
     layout->addWidget(new QLabel(tr("Template:")), row, 0);
     QComboBox *tp = new QComboBox();
-    const QVector<Template*>& templates = g_project->getTemplates();
+    const QVector<Thing*>& templates = g_project->getThings("Template");
     for(int i = 0; i < templates.size(); ++i)
         tp->addItem(templates[i]->getString("name"));
     tp->model()->sort(0);
@@ -325,7 +325,7 @@ void Proposals::onAddProposalClicked()
         proposal->set("client", client->currentText());
         proposal->set("date", calendar->selectedDate());
         proposal->set("template", tp->currentText());
-        if(g_project->addProposal(proposal)) {
+        if(g_project->addThing(proposal)) {
             MyTableWidgetItem *item = addProposal(proposal);
             m_proposalsTable->setCurrentItem(item);
             m_proposalsTable->resizeColumnsToContents();
@@ -346,7 +346,7 @@ void Proposals::onRemoveProposalClicked()
     if(Tools::requestYesNoFromUser(tr("Remove Proposal"), tr("Do you really want to remove proposal %1?").arg(reference->text())) == "No")
         return;
 
-    g_project->removeProposal(reference->text());
+    g_project->removeThing("Proposal", reference->text());
     m_proposalsTable->removeRow(currentRow);
 }
 
@@ -423,7 +423,7 @@ void Proposals::onProposalsCurrentCellChanged(int currentRow, int, int previousR
 void Proposals::onProposalsCellDoubleClicked(int row, int column)
 {
     QTableWidgetItem *reference = m_proposalsTable->item(row, PHEADER_REFERENCE);
-    Proposal *proposal = g_project->getProposal(reference->text());
+    Proposal *proposal = (Proposal*)g_project->getThing("Proposal", reference->text());
 
     QDialog dialog;
     dialog.setWindowTitle(tr("Edit Proposal %1").arg(reference->text()));
@@ -465,7 +465,7 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
     else if(column == PHEADER_CLIENT) {
         nClient = new QComboBox();
         nClient->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        const QVector<Company*>& companies = g_project->getCompanies();
+        const QVector<Thing*>& companies = g_project->getThings("Company");
         for(int i = 0; i < companies.size(); ++i)
             nClient->addItem(companies[i]->getString("name"));
         nClient->model()->sort(0);
@@ -485,7 +485,7 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
     else if(column == PHEADER_TEMPLATE) {
         nTemplate = new QComboBox();
         nTemplate->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        const QVector<Template*>& templates = g_project->getTemplates();
+        const QVector<Thing*>& templates = g_project->getThings("Template");
         for(int i = 0; i < templates.size(); ++i)
             nTemplate->addItem(templates[i]->getString("name"));
         nTemplate->model()->sort(0);
@@ -502,7 +502,7 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
             proposal->set("state", nState->currentIndex(), true);
         }
         else if(nReference) {
-            if(g_project->getProposal(nReference->text()))
+            if(g_project->getThing("Proposal", nReference->text()))
                 qCritical() << "A proposal with this name already exists.";
             else
                 proposal->set("reference", nReference->text(), true);

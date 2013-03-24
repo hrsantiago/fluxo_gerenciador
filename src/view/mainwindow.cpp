@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
     viewActionGroup->addAction(m_proposalsAction);
     viewActionGroup->addAction(m_peopleAction);
     viewActionGroup->addAction(m_companiesAction);
-    m_eventsAction->setChecked(true);
+    m_proposalsAction->setChecked(true);
 
     // Preferences
     QMenu *preferencesMenu = qMenuBar->addMenu(tr("Preferences"));

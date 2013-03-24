@@ -27,7 +27,8 @@ SOURCES += src/main.cpp\
     src/core/template.cpp \
     src/core/thing.cpp \
     src/view/events.cpp \
-    src/core/event.cpp
+    src/core/event.cpp \
+    src/core/contract.cpp
 
 HEADERS  += src/view/mainwindow.h \
     src/core/project.h \
@@ -35,7 +36,6 @@ HEADERS  += src/view/mainwindow.h \
     src/view/people.h \
     src/tools.h \
     src/view/proposals.h \
-    src/view/contracts.h \
     src/core/proposal.h \
     src/view/companies.h \
     src/core/person.h \
@@ -45,7 +45,9 @@ HEADERS  += src/view/mainwindow.h \
     src/core/thing.h \
     src/view/events.h \
     src/core/event.h \
-    src/headers.h
+    src/headers.h \
+    src/core/contract.h \
+    src/view/contracts.h
 
 TRANSLATIONS = translations/pt-BR.ts
 win32:RC_FILE = src/resources.rc

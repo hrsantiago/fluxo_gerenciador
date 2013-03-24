@@ -95,7 +95,7 @@ QString Companies::createCompany()
     company->set("zipcode", a[4]);
     company->set("telephone", a[5]);
 
-    if(!g_project->addCompany(company)) {
+    if(!g_project->addThing(company)) {
         qCritical() << tr("A company with this name already exists.");
         return QString();
     }
@@ -134,8 +134,8 @@ void Companies::updateList()
 
     disconnect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onListItemChanged(QListWidgetItem*,QListWidgetItem*)));
     m_list->clear();
-    const QVector<Company*>& companies = g_project->getCompanies();
-    for(QVector<Company*>::const_iterator it = companies.constBegin(), end = companies.constEnd(); it != end; ++it) {
+    const QVector<Thing*>& companies = g_project->getThings("Company");
+    for(QVector<Thing*>::const_iterator it = companies.constBegin(), end = companies.constEnd(); it != end; ++it) {
         QListWidgetItem *item = new QListWidgetItem((*it)->getString("name"));
         m_list->addItem(item);
 
@@ -153,7 +153,7 @@ void Companies::updateList()
 
 void Companies::updateCompany(const QString& name)
 {
-    Company *company = g_project->getCompany(name);
+    Company *company = (Company*)g_project->getThing("Company", name);
     if(company) {
         company->set("name", m_nameWidget->text());
         company->set("address", m_addressWidget->text());
@@ -190,7 +190,7 @@ void Companies::onListItemChanged(QListWidgetItem *current, QListWidgetItem *pre
     }
     if(current) {
         QString name = current->text();
-        Company *company = g_project->getCompany(name);
+        Company *company = (Company*)g_project->getThing("Company", name);
         disconnectWidgets();
         m_nameWidget->setText(company->getString("name"));
         m_addressWidget->setText(company->getString("address"));
@@ -214,7 +214,7 @@ void Companies::onRemoveButtonClicked()
         if(Tools::requestYesNoFromUser(tr("Remove Company"), tr("Do you really want to remove this company?")) == "No")
             return;
 
-        if(g_project->removeCompany(currentItem->text())) {
+        if(g_project->removeThing("Company", currentItem->text())) {
             m_list->takeItem(m_list->row(currentItem));
             delete currentItem;
         }

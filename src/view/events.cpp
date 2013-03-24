@@ -46,9 +46,9 @@ void Events::updateEventsList()
     m_eventsTable->clearContents();
     m_eventsTable->setRowCount(0);
 
-    const QVector<Event*>& events = g_project->getEvents();
-    for(QVector<Event*>::const_iterator it = events.constBegin(), end = events.constEnd(); it != end; ++it) {
-        MyTableWidgetItem *item = addEvent(*it);
+    const QVector<Thing*>& events = g_project->getThings("Event");
+    for(QVector<Thing*>::const_iterator it = events.constBegin(), end = events.constEnd(); it != end; ++it) {
+        MyTableWidgetItem *item = addEvent((Event*)*it);
         if(description == (*it)->getString("description"))
             currentItem = item;
     }
@@ -151,7 +151,8 @@ void Events::onEventsCustomContextMenuRequested(QPoint pos)
 
 void Events::onUpdateDateTime()
 {
-    QString text = QDateTime::currentDateTime().toString("hh:mm:ss ; dd/MM/yyyy (dddd)");
+    QLocale locale;
+    QString text = locale.toString(QDateTime::currentDateTime(), "hh:mm:ss ; dd/MM/yyyy (dddd)");
     m_dateTimeLabel->setText(text);
     QTimer::singleShot(1000, this, SLOT(onUpdateDateTime()));
 }

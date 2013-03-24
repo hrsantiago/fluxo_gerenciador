@@ -3,6 +3,7 @@
 
 #include "headers.h"
 #include "event.h"
+#include "contract.h"
 #include "proposal.h"
 #include "person.h"
 #include "company.h"
@@ -28,52 +29,20 @@ public:
     void setFilename(const QString& filename) { m_filename = filename; }
     QString getFilename() { return m_filename; }
 
-    bool addEvent(Event *event);
-    Event *getEvent(const QString& description);
-    QVector<Event*> getEvents();
-    void removeEvent(const QString& description);
-
-    bool addProposal(Proposal *proposal);
-    Proposal *getProposal(const QString& reference);
-    const QVector<Proposal*>& getProposals() { return m_proposals; }
-    void removeProposal(const QString &reference);
-
-    bool addPerson(Person *person);
-    Person *getPerson(const QString& name);
-    const QVector<Person*>& getPeople() { return m_people; }
-    void removePerson(const QString& name);
-
-    bool addCompany(Company *company);
-    Company *getCompany(const QString& name);
-    const QVector<Company*>& getCompanies() { return m_companies; }
-    bool removeCompany(const QString& name);
-
-    bool addTemplate(Template *tp);
-    Template *getTemplate(const QString& name);
-    const QVector<Template*>& getTemplates() { return m_templates; }
-    bool removeTemplate(const QString& name);
-
     void setSaved(bool saved);
     bool isSaved() { return m_isSaved; }
 
+    Thing *createThing(const QString& name);
+    bool addThing(Thing *thing);
+    Thing *getThing(const QString& name, const QVariant& mainValue);
+    const QVector<Thing*>& getThings(const QString& name);
+    bool removeThing(const QString& name, const QVariant& mainValue);
+
 private:
-    void saveProposals(QSettings &settings);
-    void savePeople(QSettings& settings);
-    void saveCompanies(QSettings& settings);
-    void saveTemplates(QSettings& settings);
-
-    void loadProposals(QSettings& settings);
-    void loadPeople(QSettings& settings);
-    void loadCompanies(QSettings& settings);
-    void loadTemplates(QSettings& settings);
-
     QString m_companyName;
     QString m_filename;
-    QVector<Event*> m_events;
-    QVector<Proposal*> m_proposals;
-    QVector<Person*> m_people;
-    QVector<Company*> m_companies;
-    QVector<Template*> m_templates;
+    QMap<QString, QVector<Thing*> > m_things;
+
     bool m_isSaved;
     bool m_isLoading;
 
