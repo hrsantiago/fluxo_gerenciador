@@ -89,7 +89,7 @@ void Contracts::updateContractsList()
 
     const QVector<Thing*>& contracts = g_project->getThings("Contract");
     for(QVector<Thing*>::const_iterator it = contracts.constBegin(), end = contracts.constEnd(); it != end; ++it) {
-        MyTableWidgetItem *item = addContract((Contract*)*it);
+        MyTableWidgetItem *item = addContract(*it);
         if(reference == (*it)->getString("reference"))
             currentItem = item;
     }
@@ -107,16 +107,16 @@ void Contracts::updateContractsList()
 
 void Contracts::updateItemsList()
 {
-    ContractItem *item = NULL;
+    Thing *item = NULL;
     QTableWidgetItem *numberItem = m_itemsTable->item(m_itemsTable->currentRow(), IHEADER_NUMBER);
     if(numberItem)
-        item = numberItem->data(Qt::UserRole).value<ContractItem*>();
+        item = numberItem->data(Qt::UserRole).value<Thing*>();
 
     m_itemsTable->setSortingEnabled(false);
     m_itemsTable->clearContents();
     m_itemsTable->setRowCount(0);
 
-    Contract *contract = getCurrentContract();
+    Thing *contract = getCurrentContract();
     if(!contract) {
         m_itemsTable->setSortingEnabled(true);
         m_itemsTable->resizeColumnsToContents();
@@ -127,7 +127,7 @@ void Contracts::updateItemsList()
 
     MyTableWidgetItem *currentItem = NULL;
 
-    const QVector<ContractItem*>& items = contract->getItems();
+    const QVector<Thing*>& items = contract->getChildren("ContractItem");
     for(int i = 0; i < items.size(); ++i) {
         MyTableWidgetItem *tableItem = addItem(items[i]);
         if(item == items[i])
@@ -143,25 +143,25 @@ void Contracts::updateItemsList()
         m_itemsTable->selectRow(0);
 }
 
-MyTableWidgetItem *Contracts::addContract(Contract *contract)
+MyTableWidgetItem *Contracts::addContract(Thing *contract)
 {
     QLocale locale;
 
     MyTableWidgetItem *state = new MyTableWidgetItem();
-    Contract::State stateValue = (Contract::State)contract->getInt("state");
-    if(stateValue == Contract::STATE_PENDING) {
+    ProposalState stateValue = (ProposalState)contract->getInt("state");
+    if(stateValue == STATE_PENDING) {
         state->setIcon(QIcon("resources/images/pending.png"));
         state->setToolTip(tr("Pending"));
     }
-    else if(stateValue == Contract::STATE_SENT) {
+    else if(stateValue == STATE_SENT) {
         state->setIcon(QIcon("resources/images/sent.png"));
         state->setToolTip(tr("Sent"));
     }
-    else if(stateValue == Contract::STATE_ACCEPTED) {
+    else if(stateValue == STATE_ACCEPTED) {
         state->setIcon(QIcon("resources/images/accepted.png"));
         state->setToolTip(tr("Accepted"));
     }
-    else if(stateValue == Contract::STATE_DECLINED) {
+    else if(stateValue == STATE_DECLINED) {
         state->setIcon(QIcon("resources/images/declined.png"));
         state->setToolTip(tr("Declined"));
     }
@@ -201,9 +201,9 @@ MyTableWidgetItem *Contracts::addContract(Contract *contract)
     return reference;
 }
 
-MyTableWidgetItem *Contracts::addItem(ContractItem *item)
+MyTableWidgetItem *Contracts::addItem(Thing *item)
 {
-    int id = item->getId();
+    int id = item->getParent()->getChildIndex(item);
 
     MyTableWidgetItem *number = new MyTableWidgetItem();
     number->setData(Qt::DisplayRole, id+1);
@@ -242,31 +242,31 @@ void Contracts::selectContract(Thing *contract)
 {
     for(int r = 0; r < m_contractsTable->rowCount(); ++r) {
         QTableWidgetItem *reference = m_contractsTable->item(r, PHEADER_REFERENCE);
-        if(reference->data(Qt::UserRole).value<Contract*>() == contract) {
+        if(reference->data(Qt::UserRole).value<Thing*>() == contract) {
             m_contractsTable->selectRow(r);
             return;
         }
     }
 }
 
-Contract *Contracts::getCurrentContract()
+Thing *Contracts::getCurrentContract()
 {
     int currentRow = m_contractsTable->currentRow();
     if(currentRow == -1)
         return NULL;
 
     QTableWidgetItem *reference = m_contractsTable->item(currentRow, PHEADER_REFERENCE);
-    return reference->data(Qt::UserRole).value<Contract*>();
+    return reference->data(Qt::UserRole).value<Thing*>();
 }
 
-ContractItem *Contracts::getCurrentItem()
+Thing *Contracts::getCurrentItem()
 {
     int currentRow = m_itemsTable->currentRow();
     if(currentRow == -1)
         return NULL;
 
     QTableWidgetItem *reference = m_itemsTable->item(currentRow, IHEADER_NUMBER);
-    return reference->data(Qt::UserRole).value<ContractItem*>();
+    return reference->data(Qt::UserRole).value<Thing*>();
 }
 
 void Contracts::onAddContractClicked()
@@ -311,8 +311,8 @@ void Contracts::onAddContractClicked()
     layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
-        Contract *contract = new Contract;
-        contract->set("state", Contract::STATE_PENDING);
+        Thing *contract = new Thing("Contract");
+        contract->set("state", STATE_PENDING);
         contract->set("reference", referenceLineEdit->text());
         contract->set("description", descriptionLineEdit->text());
         contract->set("client", client->currentText());
@@ -345,7 +345,7 @@ void Contracts::onRemoveContractClicked()
 
 void Contracts::onAddItemClicked(int index)
 {
-    Contract *contract = getCurrentContract();
+    Thing *contract = getCurrentContract();
     if(!contract)
         return;
 
@@ -376,12 +376,12 @@ void Contracts::onAddItemClicked(int index)
     layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
-        ContractItem *item = new ContractItem;
+        Thing *item = new Thing("ContractItem");
         item->set("description", descriptionLineEdit->text());
         item->set("unit", unitLineEdit->text());
         item->set("price", priceLineEdit->text().toDouble());
         item->set("amount", amountLineEdit->text().toInt());
-        contract->addItem(item, index);
+        contract->addChild(item, index);
 
         MyTableWidgetItem *addedItem = addItem(item);
         m_itemsTable->setCurrentItem(addedItem);
@@ -400,8 +400,8 @@ void Contracts::onRemoveItemClicked()
     if(Tools::requestYesNoFromUser(tr("Remove Item"), tr("Do you really want to remove item #%1?").arg(currentRow+1)) == "No")
         return;
 
-    Contract *contract = getCurrentContract();
-    contract->removeItem(currentRow);
+    Thing *contract = getCurrentContract();
+    contract->removeChild(currentRow);
 
     // Ids must be adjusted
     updateItemsList();
@@ -416,7 +416,7 @@ void Contracts::onContractsCurrentCellChanged(int currentRow, int, int previousR
 void Contracts::onContractsCellDoubleClicked(int row, int column)
 {
     QTableWidgetItem *reference = m_contractsTable->item(row, PHEADER_REFERENCE);
-    Contract *contract = (Contract*)g_project->getThing("Contract", reference->text());
+    Thing *contract = g_project->getThing("Contract", reference->text());
 
     QDialog dialog;
     dialog.setWindowTitle(tr("Edit Contract %1").arg(reference->text()));

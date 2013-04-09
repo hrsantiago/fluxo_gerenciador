@@ -2,8 +2,7 @@
 #define TEMPLATES_H
 
 #include "headers.h"
-#include "core/proposal.h"
-#include "core/template.h"
+#include "core/thing.h"
 
 class Templates : public QWidget
 {
@@ -11,7 +10,7 @@ class Templates : public QWidget
 public:
     Templates(QWidget *parent = NULL);
 
-    void print(Proposal *proposal);
+    void print(Thing *proposal);
 
 private:
     void connectWidgets();
@@ -19,7 +18,7 @@ private:
     void updateList();
     void updateTemplate(const QString& name);
 
-    Template *m_currentTemplate;
+    Thing *m_currentTemplate;
 
     QLineEdit *m_nameWidget;
     QLineEdit *m_descriptionWidget;

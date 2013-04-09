@@ -96,7 +96,7 @@ void Proposals::updateProposalsList()
 
     const QVector<Thing*>& proposals = g_project->getThings("Proposal");
     for(QVector<Thing*>::const_iterator it = proposals.constBegin(), end = proposals.constEnd(); it != end; ++it) {
-        MyTableWidgetItem *item = addProposal((Proposal*)*it);
+        MyTableWidgetItem *item = addProposal(*it);
         if(reference == (*it)->getString("reference"))
             currentItem = item;
     }
@@ -114,16 +114,16 @@ void Proposals::updateProposalsList()
 
 void Proposals::updateItemsList()
 {
-    ProposalItem *item = NULL;
+    Thing *item = NULL;
     QTableWidgetItem *numberItem = m_itemsTable->item(m_itemsTable->currentRow(), IHEADER_NUMBER);
     if(numberItem)
-        item = numberItem->data(Qt::UserRole).value<ProposalItem*>();
+        item = numberItem->data(Qt::UserRole).value<Thing*>();
 
     m_itemsTable->setSortingEnabled(false);
     m_itemsTable->clearContents();
     m_itemsTable->setRowCount(0);
 
-    Proposal *proposal = getCurrentProposal();
+    Thing *proposal = getCurrentProposal();
     if(!proposal) {
         m_itemsTable->setSortingEnabled(true);
         m_itemsTable->resizeColumnsToContents();
@@ -134,7 +134,7 @@ void Proposals::updateItemsList()
 
     MyTableWidgetItem *currentItem = NULL;
 
-    const QVector<ProposalItem*>& items = proposal->getItems();
+    const QVector<Thing*>& items = proposal->getChildren("ProposalItem");
     for(int i = 0; i < items.size(); ++i) {
         MyTableWidgetItem *tableItem = addItem(items[i]);
         if(item == items[i])
@@ -150,25 +150,25 @@ void Proposals::updateItemsList()
         m_itemsTable->selectRow(0);
 }
 
-MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
+MyTableWidgetItem *Proposals::addProposal(Thing *proposal)
 {
     QLocale locale;
 
     MyTableWidgetItem *state = new MyTableWidgetItem();
-    Proposal::State stateValue = (Proposal::State)proposal->getInt("state");
-    if(stateValue == Proposal::STATE_PENDING) {
+    ProposalState stateValue = (ProposalState)proposal->getInt("state");
+    if(stateValue == STATE_PENDING) {
         state->setIcon(QIcon("resources/images/pending.png"));
         state->setToolTip(tr("Pending"));
     }
-    else if(stateValue == Proposal::STATE_SENT) {
+    else if(stateValue == STATE_SENT) {
         state->setIcon(QIcon("resources/images/sent.png"));
         state->setToolTip(tr("Sent"));
     }
-    else if(stateValue == Proposal::STATE_ACCEPTED) {
+    else if(stateValue == STATE_ACCEPTED) {
         state->setIcon(QIcon("resources/images/accepted.png"));
         state->setToolTip(tr("Accepted"));
     }
-    else if(stateValue == Proposal::STATE_DECLINED) {
+    else if(stateValue == STATE_DECLINED) {
         state->setIcon(QIcon("resources/images/declined.png"));
         state->setToolTip(tr("Declined"));
     }
@@ -208,9 +208,9 @@ MyTableWidgetItem *Proposals::addProposal(Proposal *proposal)
     return reference;
 }
 
-MyTableWidgetItem *Proposals::addItem(ProposalItem *item)
+MyTableWidgetItem *Proposals::addItem(Thing *item)
 {
-    int id = item->getId();
+    int id = item->getParent()->getChildIndex(item);
 
     MyTableWidgetItem *number = new MyTableWidgetItem();
     number->setData(Qt::DisplayRole, id+1);
@@ -249,31 +249,31 @@ void Proposals::selectProposal(Thing *proposal)
 {
     for(int r = 0; r < m_proposalsTable->rowCount(); ++r) {
         QTableWidgetItem *reference = m_proposalsTable->item(r, PHEADER_REFERENCE);
-        if(reference->data(Qt::UserRole).value<Proposal*>() == proposal) {
+        if(reference->data(Qt::UserRole).value<Thing*>() == proposal) {
             m_proposalsTable->selectRow(r);
             return;
         }
     }
 }
 
-Proposal *Proposals::getCurrentProposal()
+Thing *Proposals::getCurrentProposal()
 {
     int currentRow = m_proposalsTable->currentRow();
     if(currentRow == -1)
         return NULL;
 
     QTableWidgetItem *reference = m_proposalsTable->item(currentRow, PHEADER_REFERENCE);
-    return reference->data(Qt::UserRole).value<Proposal*>();
+    return reference->data(Qt::UserRole).value<Thing*>();
 }
 
-ProposalItem *Proposals::getCurrentItem()
+Thing *Proposals::getCurrentItem()
 {
     int currentRow = m_itemsTable->currentRow();
     if(currentRow == -1)
         return NULL;
 
     QTableWidgetItem *reference = m_itemsTable->item(currentRow, IHEADER_NUMBER);
-    return reference->data(Qt::UserRole).value<ProposalItem*>();
+    return reference->data(Qt::UserRole).value<Thing*>();
 }
 
 void Proposals::onAddProposalClicked()
@@ -318,8 +318,8 @@ void Proposals::onAddProposalClicked()
     layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
-        Proposal *proposal = new Proposal;
-        proposal->set("state", Proposal::STATE_PENDING);
+        Thing *proposal = new Thing("Proposal");
+        proposal->set("state", STATE_PENDING);
         proposal->set("reference", referenceLineEdit->text());
         proposal->set("description", descriptionLineEdit->text());
         proposal->set("client", client->currentText());
@@ -352,7 +352,7 @@ void Proposals::onRemoveProposalClicked()
 
 void Proposals::onAddItemClicked(int index)
 {
-    Proposal *proposal = getCurrentProposal();
+    Thing *proposal = getCurrentProposal();
     if(!proposal)
         return;
 
@@ -383,12 +383,12 @@ void Proposals::onAddItemClicked(int index)
     layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
-        ProposalItem *item = new ProposalItem;
+        Thing *item = new Thing("ProposalItem");
         item->set("description", descriptionLineEdit->text());
         item->set("unit", unitLineEdit->text());
         item->set("price", priceLineEdit->text().toDouble());
         item->set("amount", amountLineEdit->text().toInt());
-        proposal->addItem(item, index);
+        proposal->addChild(item, index);
 
         MyTableWidgetItem *addedItem = addItem(item);
         m_itemsTable->setCurrentItem(addedItem);
@@ -407,8 +407,8 @@ void Proposals::onRemoveItemClicked()
     if(Tools::requestYesNoFromUser(tr("Remove Item"), tr("Do you really want to remove item #%1?").arg(currentRow+1)) == "No")
         return;
 
-    Proposal *proposal = getCurrentProposal();
-    proposal->removeItem(currentRow);
+    Thing *proposal = getCurrentProposal();
+    proposal->removeChild(currentRow);
 
     // Ids must be adjusted
     updateItemsList();
@@ -423,7 +423,7 @@ void Proposals::onProposalsCurrentCellChanged(int currentRow, int, int previousR
 void Proposals::onProposalsCellDoubleClicked(int row, int column)
 {
     QTableWidgetItem *reference = m_proposalsTable->item(row, PHEADER_REFERENCE);
-    Proposal *proposal = (Proposal*)g_project->getThing("Proposal", reference->text());
+    Thing *proposal = g_project->getThing("Proposal", reference->text());
 
     QDialog dialog;
     dialog.setWindowTitle(tr("Edit Proposal %1").arg(reference->text()));
@@ -550,7 +550,7 @@ void Proposals::onProposalsCustomContextMenuRequested(QPoint pos)
         onRemoveProposalClicked();
     }
     else if(view && ret == view) {
-        Proposal *proposal = getCurrentProposal();
+        Thing *proposal = getCurrentProposal();
         m_templates->print(proposal);
     }
 }

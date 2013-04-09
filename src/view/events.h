@@ -21,8 +21,8 @@ public:
 
 private:
     void updateEventsList();
-    Event *getCurrentEvent();
-    MyTableWidgetItem *addEvent(Event *event);
+    Thing *getCurrentEvent();
+    MyTableWidgetItem *addEvent(Thing *event);
 
     QLabel *m_dateTimeLabel;
     QTableWidget *m_eventsTable;
@@ -34,6 +34,7 @@ private slots:
 
     void onUpdateDateTime();
     void onProjectLoad();
+    void onProjectUpdate();
 
 };
 

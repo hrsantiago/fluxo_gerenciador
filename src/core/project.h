@@ -2,12 +2,7 @@
 #define PROJECT_H
 
 #include "headers.h"
-#include "event.h"
-#include "contract.h"
-#include "proposal.h"
-#include "person.h"
-#include "company.h"
-#include "template.h"
+#include "thing.h"
 
 class Project : public QWidget
 {
@@ -32,16 +27,15 @@ public:
     void setSaved(bool saved);
     bool isSaved() { return m_isSaved; }
 
-    Thing *createThing(const QString& name);
     bool addThing(Thing *thing);
-    Thing *getThing(const QString& name, const QVariant& mainValue);
-    const QVector<Thing*>& getThings(const QString& name);
-    bool removeThing(const QString& name, const QVariant& mainValue);
+    Thing *getThing(const QString& type, const QVariant& mainValue);
+    const QVector<Thing *> getThings(const QString& type);
+    bool removeThing(const QString& type, const QVariant& mainValue);
 
 private:
     QString m_companyName;
     QString m_filename;
-    QMap<QString, QVector<Thing*> > m_things;
+    QVector<Thing*> m_things;
 
     bool m_isSaved;
     bool m_isLoading;

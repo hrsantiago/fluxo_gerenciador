@@ -87,7 +87,7 @@ QString Companies::createCompany()
     if(!Tools::isRequestedDataValid(a))
         return QString();
 
-    Company *company = new Company;
+    Thing *company = new Thing("Company");
     company->set("name", a[0]);
     company->set("address", a[1]);
     company->set("city", a[2]);
@@ -153,7 +153,7 @@ void Companies::updateList()
 
 void Companies::updateCompany(const QString& name)
 {
-    Company *company = (Company*)g_project->getThing("Company", name);
+    Thing *company = g_project->getThing("Company", name);
     if(company) {
         company->set("name", m_nameWidget->text());
         company->set("address", m_addressWidget->text());
@@ -190,7 +190,7 @@ void Companies::onListItemChanged(QListWidgetItem *current, QListWidgetItem *pre
     }
     if(current) {
         QString name = current->text();
-        Company *company = (Company*)g_project->getThing("Company", name);
+        Thing *company = g_project->getThing("Company", name);
         disconnectWidgets();
         m_nameWidget->setText(company->getString("name"));
         m_addressWidget->setText(company->getString("address"));

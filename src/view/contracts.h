@@ -34,10 +34,10 @@ public:
 private:
     void updateContractsList();
     void updateItemsList();
-    MyTableWidgetItem *addContract(Contract *contract);
-    MyTableWidgetItem *addItem(ContractItem *item);
-    Contract *getCurrentContract();
-    ContractItem *getCurrentItem();
+    MyTableWidgetItem *addContract(Thing *contract);
+    MyTableWidgetItem *addItem(Thing *item);
+    Thing *getCurrentContract();
+    Thing *getCurrentItem();
 
     QTableWidget *m_contractsTable;
     QTableWidget *m_itemsTable;

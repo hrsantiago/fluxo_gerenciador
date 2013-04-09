@@ -10,14 +10,11 @@ class Thing : public QObject
     Q_OBJECT
 
 public:
-    Thing();
-    virtual ~Thing();
+    Thing(const QString& type);
+    ~Thing();
 
-    virtual QString getName() = 0;
-    virtual QString getMainKey() = 0;
-
-    virtual void save(QSettings& settings);
-    virtual void load(QSettings& settings);
+    void save(QSettings& settings);
+    void load(QSettings& settings);
 
     void set(const QString& key, const QVariant& value, bool fromUser = false);
     QVariant get(const QString& key, const QVariant& def = QVariant());
@@ -26,16 +23,26 @@ public:
     QString getString(const QString& key, const QVariant& def = QVariant()) { return get(key, def).toString(); }
     QDate getDate(const QString& key, const QVariant& def = QVariant()) { return get(key, def).toDate(); }
 
-    void addEvent(Event *event);
-    const QVector<Event*>& getEvents() { return m_events; }
-    void clearEvents();
+    void setParent(Thing *thing) { m_parent = thing; }
+    Thing *getParent() { return m_parent; }
+
+    void addChild(Thing *thing, int index = -1);
+    int getChildIndex(Thing *thing);
+    const QVector<Thing*>& getChildren() { return m_children; }
+    QVector<Thing*> getChildren(const QString& type);
+    bool removeChild(Thing *thing);
+    bool removeChild(int index);
+    void clearChildren();
+    void clearChildren(const QString& type);
 
 public slots:
-    virtual void onSet(const QString&, const QVariant&) {}
+    void onSet(const QString&, const QVariant&);
 
 private:
     QMap<QString, QVariant> m_properties;
-    QVector<Event*> m_events;
+
+    Thing *m_parent;
+    QVector<Thing*> m_children;
 
 };
 

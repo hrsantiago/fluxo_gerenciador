@@ -31,6 +31,7 @@ Events::Events(QWidget *parent) :
 
     onUpdateDateTime();
     connect(g_project, SIGNAL(projectLoad()), this, SLOT(onProjectLoad()));
+    connect(g_project, SIGNAL(projectUpdate()), this, SLOT(onProjectUpdate()));
 }
 
 void Events::updateEventsList()
@@ -48,7 +49,7 @@ void Events::updateEventsList()
 
     const QVector<Thing*>& events = g_project->getThings("Event");
     for(QVector<Thing*>::const_iterator it = events.constBegin(), end = events.constEnd(); it != end; ++it) {
-        MyTableWidgetItem *item = addEvent((Event*)*it);
+        MyTableWidgetItem *item = addEvent(*it);
         if(description == (*it)->getString("description"))
             currentItem = item;
     }
@@ -62,17 +63,17 @@ void Events::updateEventsList()
         m_eventsTable->selectRow(0);
 }
 
-Event *Events::getCurrentEvent()
+Thing *Events::getCurrentEvent()
 {
     int currentRow = m_eventsTable->currentRow();
     if(currentRow == -1)
         return NULL;
 
     QTableWidgetItem *identifier = m_eventsTable->item(currentRow, HEADER_IDENTIFIER);
-    return identifier->data(Qt::UserRole).value<Event*>();
+    return identifier->data(Qt::UserRole).value<Thing*>();
 }
 
-MyTableWidgetItem *Events::addEvent(Event *event)
+MyTableWidgetItem *Events::addEvent(Thing *event)
 {
     QLocale locale;
 
@@ -121,7 +122,7 @@ void Events::onEventsCustomContextMenuRequested(QPoint pos)
 
     add = menu.addAction(tr("Add"));
 
-    Event *event = getCurrentEvent();
+    Thing *event = getCurrentEvent();
     if(event) {
         if(!event->getParent())
             edit = menu.addAction(tr("Edit"));
@@ -135,7 +136,7 @@ void Events::onEventsCustomContextMenuRequested(QPoint pos)
     }
 
     QAction *ret = menu.exec(m_eventsTable->viewport()->mapToGlobal(pos));
-    if(add &&ret == add) {
+    if(add && ret == add) {
         //onAddProposalClicked();
     }
     else if(edit && ret == edit) {
@@ -161,4 +162,9 @@ void Events::onProjectLoad()
 {
     updateEventsList();
     m_eventsTable->sortItems(HEADER_DATE, Qt::AscendingOrder);
+}
+
+void Events::onProjectUpdate()
+{
+    updateEventsList();
 }

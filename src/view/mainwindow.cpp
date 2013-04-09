@@ -170,20 +170,20 @@ void MainWindow::selectThing(Thing *thing)
     if(!thing)
         return;
 
-    QString name = thing->getName();
-    if(name == "Event")
+    QString type = thing->getString("type");
+    if(type == "Event")
         m_eventsAction->trigger();
-    else if(name == "Contract")
+    else if(type == "Contract")
         m_contractsAction->trigger();
-    else if(name == "Proposal") {
+    else if(type == "Proposal") {
         m_proposals->selectProposal(thing);
         m_proposalsAction->trigger();
     }
-    else if(name == "ProposalItem")
+    else if(type == "ProposalItem")
         m_proposalsAction->trigger();
-    else if(name == "Person")
+    else if(type == "Person")
         m_peopleAction->trigger();
-    else if(name == "Company")
+    else if(type == "Company")
         m_companiesAction->trigger();
 }
 

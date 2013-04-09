@@ -35,10 +35,10 @@ public:
 private:
     void updateProposalsList();
     void updateItemsList();
-    MyTableWidgetItem *addProposal(Proposal *proposal);
-    MyTableWidgetItem *addItem(ProposalItem *item);
-    Proposal *getCurrentProposal();
-    ProposalItem *getCurrentItem();
+    MyTableWidgetItem *addProposal(Thing *proposal);
+    MyTableWidgetItem *addItem(Thing *item);
+    Thing *getCurrentProposal();
+    Thing *getCurrentItem();
 
     Templates *m_templates;
     QTableWidget *m_proposalsTable;

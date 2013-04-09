@@ -84,9 +84,9 @@ Templates::Templates(QWidget *parent) :
     connect(g_project, SIGNAL(projectLoad()), this, SLOT(onProjectLoad()));
 }
 
-void Templates::print(Proposal *proposal)
+void Templates::print(Thing *proposal)
 {
-    m_currentTemplate = (Template*)g_project->getThing("Template", proposal->getString("template"));
+    m_currentTemplate = g_project->getThing("Template", proposal->getString("template"));
     if(!m_currentTemplate) {
         qCritical() << tr("Failed loading template.");
         return;
@@ -157,7 +157,7 @@ void Templates::updateList()
 
 void Templates::updateTemplate(const QString& name)
 {
-    Template *tp = (Template*)g_project->getThing("Template", name);
+    Thing *tp = g_project->getThing("Template", name);
     if(tp) {
         tp->set("name", m_nameWidget->text());
         tp->set("description", m_descriptionWidget->text());
@@ -193,7 +193,7 @@ void Templates::onListItemChanged(QListWidgetItem *current, QListWidgetItem *pre
     }
     if(current) {
         QString name = current->text();
-        Template *tp = (Template*)g_project->getThing("Template", name);
+        Thing *tp = g_project->getThing("Template", name);
         disconnectWidgets();
         m_nameWidget->setText(tp->getString("name"));
         m_descriptionWidget->setText(tp->getString("description"));
@@ -211,7 +211,7 @@ void Templates::onAddButtonClicked()
     if(!Tools::isRequestedDataValid(a))
         return;
 
-    Template *tp = new Template;
+    Thing *tp = new Thing("Template");
     tp->set("name", a[0]);
     tp->set("description", a[1]);
 

@@ -113,7 +113,7 @@ void People::updateList()
 
 void People::updatePerson(const QString& name)
 {
-    Person *person = (Person*)g_project->getThing("Person", name);
+    Thing *person = g_project->getThing("Person", name);
     if(person) {
         person->set("name", m_nameWidget->text());
         person->set("gender", m_genderWidget->currentIndex());
@@ -148,7 +148,7 @@ void People::onListItemChanged(QListWidgetItem *current, QListWidgetItem *previo
     }
     if(current) {
         QString name = current->text();
-        Person *person = (Person*)g_project->getThing("Person", name);
+        Thing *person = g_project->getThing("Person", name);
         disconnectWidgets();
         m_nameWidget->setText(person->getString("name"));
         m_genderWidget->setCurrentIndex(person->getInt("gender"));
@@ -172,7 +172,7 @@ void People::onAddButtonClicked()
     if(!Tools::isRequestedDataValid(a))
         return;
 
-    Person *person = new Person;
+    Thing *person = new Thing("Person");
     person->set("name", a[0]);
     person->set("gender", a[1].split("|")[1].toInt());
     person->set("telephone", a[2]);

@@ -19,16 +19,10 @@ SOURCES += src/main.cpp\
     src/tools.cpp \
     src/view/proposals.cpp \
     src/view/contracts.cpp \
-    src/core/proposal.cpp \
     src/view/companies.cpp \
-    src/core/person.cpp \
-    src/core/company.cpp \
     src/view/templates.cpp \
-    src/core/template.cpp \
     src/core/thing.cpp \
-    src/view/events.cpp \
-    src/core/event.cpp \
-    src/core/contract.cpp
+    src/view/events.cpp
 
 HEADERS  += src/view/mainwindow.h \
     src/core/project.h \
@@ -36,17 +30,11 @@ HEADERS  += src/view/mainwindow.h \
     src/view/people.h \
     src/tools.h \
     src/view/proposals.h \
-    src/core/proposal.h \
     src/view/companies.h \
-    src/core/person.h \
-    src/core/company.h \
     src/view/templates.h \
-    src/core/template.h \
     src/core/thing.h \
     src/view/events.h \
-    src/core/event.h \
     src/headers.h \
-    src/core/contract.h \
     src/view/contracts.h
 
 TRANSLATIONS = translations/pt-BR.ts

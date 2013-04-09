@@ -26,11 +26,8 @@ void Project::clean()
     m_filename = QString();
     m_isSaved = true;
 
-    for(QMap<QString, QVector<Thing*> >::Iterator it = m_things.begin(); it != m_things.end(); ++it) {
-        for(int i = 0; i < it.value().size(); ++i)
-            delete it.value()[i];
-        it.value().clear();
-    }
+    for(int i = 0; i < m_things.size(); ++i)
+        delete m_things[i];
     m_things.clear();
 
     emit projectUpdate();
@@ -48,15 +45,13 @@ void Project::save(bool backup)
     settings.beginGroup("Project");
     settings.setValue("name", m_companyName);
 
-    for(QMap<QString, QVector<Thing*> >::Iterator it = m_things.begin(); it != m_things.end(); ++it) {
-        settings.beginGroup(it.key());
-        for(int i = 0; i < it.value().size(); ++i) {
-            settings.beginGroup(it.key() + QString::number(i));
-            it.value()[i]->save(settings);
-            settings.endGroup();
-        }
+    settings.beginGroup("Things");
+    for(int i = 0; i < m_things.size(); ++i) {
+        settings.beginGroup(QString("Thing%1").arg(i));
+        m_things[i]->save(settings);
         settings.endGroup();
     }
+    settings.endGroup();
 
     settings.endGroup();
 
@@ -85,23 +80,16 @@ void Project::load(bool backup)
     settings.beginGroup("Project");
     m_companyName = settings.value("name").toString();
 
-    QStringList thingsGroups = settings.childGroups();
-    for(int i = 0; i < thingsGroups.size(); ++i) {
-        settings.beginGroup(thingsGroups[i]);
-        QStringList things = settings.childGroups();
-        for(int j = 0; j < things.size(); ++j) {
-            settings.beginGroup(things[j]);
-
-            Thing *thing = createThing(thingsGroups[i]);
-            if(thing) {
-                thing->load(settings);
-                m_things[thingsGroups[i]].push_back(thing);
-            }
-
-            settings.endGroup();
-        }
+    settings.beginGroup("Things");
+    QStringList things = settings.childGroups();
+    for(int i = 0; i < things.size(); ++i) {
+        settings.beginGroup(things[i]);
+        Thing *thing = new Thing(settings.value("type").toString());
+        thing->load(settings);
+        m_things.push_back(thing);
         settings.endGroup();
     }
+    settings.endGroup();
 
     settings.endGroup();
 
@@ -119,68 +107,49 @@ void Project::load(bool backup)
     emit projectLoad();
 }
 
-Thing *Project::createThing(const QString& name)
-{
-    Thing *thing = NULL;
-    if(name == "Event")
-        thing = new Event;
-    else if(name == "Contract")
-        thing = new Contract;
-    else if(name == "Proposal")
-        thing = new Proposal;
-    else if(name == "Person")
-        thing = new Person;
-    else if(name == "Company")
-        thing = new Company;
-    else if(name == "Template")
-        thing = new Template;
-    return thing;
-}
-
 bool Project::addThing(Thing *thing)
 {
-    QString mainKey = thing->getMainKey();
-    QVector<Thing*>& things = m_things[thing->getName()];
-    for(int i = 0; i < things.size(); ++i) {
-        if(things[i]->get(mainKey) == thing->get(mainKey)) {
+    QString mainKey = thing->getString("mainKey");
+    for(int i = 0; i < m_things.size(); ++i) {
+        if(m_things[i]->getString("type") == thing->getString("type") && m_things[i]->get(mainKey) == thing->get(mainKey)) {
             delete thing;
             return false;
         }
     }
-    things.push_back(thing);
+    m_things.push_back(thing);
     setSaved(false);
     return true;
 }
 
-Thing *Project::getThing(const QString& name, const QVariant& mainValue)
+Thing *Project::getThing(const QString& type, const QVariant& mainValue)
 {
-    QVector<Thing*> things = m_things[name];
-    for(int i = 0; i < things.size(); ++i) {
-        Thing *thing = things[i];
-        if(thing->get(thing->getMainKey()) == mainValue)
+    for(int i = 0; i < m_things.size(); ++i) {
+        Thing *thing = m_things[i];
+        if(thing->getString("type") == type && thing->get(thing->getString("mainKey")) == mainValue)
             return thing;
     }
     return NULL;
 }
 
-const QVector<Thing*>& Project::getThings(const QString& name)
+const QVector<Thing*> Project::getThings(const QString& type)
 {
-    if(name == "Event") {
-        // TODO: gather events from everywhere
-        return m_things[name];
+    QVector<Thing*> things;
+    for(int i = 0; i < m_things.size(); ++i) {
+        Thing *thing = m_things[i];
+        if(thing->getString("type") == type)
+            things.push_back(thing);
+        things += thing->getChildren(type);
     }
-    else
-        return m_things[name];
+    return things;
 }
 
-bool Project::removeThing(const QString& name, const QVariant& mainValue)
+bool Project::removeThing(const QString& type, const QVariant& mainValue)
 {
-    QVector<Thing*>& things = m_things[name];
-    for(int i = 0; i < things.size(); ++i) {
-        Thing *thing = things[i];
-        if(thing->get(thing->getMainKey()) == mainValue) {
+    for(int i = 0; i < m_things.size(); ++i) {
+        Thing *thing = m_things[i];
+        if(thing->getString("type") == type && thing->get(thing->getString("mainKey")) == mainValue) {
             delete thing;
-            things.erase(things.begin()+i);
+            m_things.erase(m_things.begin()+i);
             setSaved(false);
             return true;
         }
