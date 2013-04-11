@@ -18,8 +18,8 @@ Contracts::Contracts()
 
     // Top
     m_contractsTable = new QTableWidget;
-    m_contractsTable->setColumnCount(6);
-    m_contractsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5,%6").arg("*").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).arg(tr("Template")).split(","));
+    m_contractsTable->setColumnCount(5);
+    m_contractsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("*").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).split(","));
     m_contractsTable->verticalHeader()->hide();
     m_contractsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_contractsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -148,22 +148,18 @@ MyTableWidgetItem *Contracts::addContract(Thing *contract)
     QLocale locale;
 
     MyTableWidgetItem *state = new MyTableWidgetItem();
-    ProposalState stateValue = (ProposalState)contract->getInt("state");
-    if(stateValue == STATE_PENDING) {
+    ContractState stateValue = (ContractState)contract->getInt("state");
+    if(stateValue == STATE_IN_PROGRESS) {
         state->setIcon(QIcon("resources/images/pending.png"));
-        state->setToolTip(tr("Pending"));
+        state->setToolTip(tr("In Progress"));
     }
-    else if(stateValue == STATE_SENT) {
-        state->setIcon(QIcon("resources/images/sent.png"));
-        state->setToolTip(tr("Sent"));
-    }
-    else if(stateValue == STATE_ACCEPTED) {
+    else if(stateValue == STATE_COMPLETED) {
         state->setIcon(QIcon("resources/images/accepted.png"));
-        state->setToolTip(tr("Accepted"));
+        state->setToolTip(tr("Completed"));
     }
-    else if(stateValue == STATE_DECLINED) {
+    else if(stateValue == STATE_CANCELED) {
         state->setIcon(QIcon("resources/images/declined.png"));
-        state->setToolTip(tr("Declined"));
+        state->setToolTip(tr("Canceled"));
     }
     state->setData(Qt::UserRole, contract->getInt("state"));
     state->setFlags(state->flags() & ~Qt::ItemIsEditable);

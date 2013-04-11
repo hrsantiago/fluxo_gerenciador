@@ -30,9 +30,9 @@ public:
     };
 
     void selectContract(Thing *contract);
+    void updateContractsList();
 
 private:
-    void updateContractsList();
     void updateItemsList();
     MyTableWidgetItem *addContract(Thing *contract);
     MyTableWidgetItem *addItem(Thing *item);

@@ -18,6 +18,7 @@ public:
 
     void set(const QString& key, const QVariant& value, bool fromUser = false);
     QVariant get(const QString& key, const QVariant& def = QVariant());
+    void remove(const QString& key) { m_properties.remove(key); }
 
     int getInt(const QString& key, const QVariant& def = QVariant()) { return get(key, def).toInt(); }
     QString getString(const QString& key, const QVariant& def = QVariant()) { return get(key, def).toString(); }
@@ -25,6 +26,8 @@ public:
 
     void setParent(Thing *thing) { m_parent = thing; }
     Thing *getParent() { return m_parent; }
+
+    void copy(Thing *other);
 
     void addChild(Thing *thing, int index = -1);
     int getChildIndex(Thing *thing);

@@ -173,8 +173,11 @@ void MainWindow::selectThing(Thing *thing)
     QString type = thing->getString("type");
     if(type == "Event")
         m_eventsAction->trigger();
-    else if(type == "Contract")
+    else if(type == "Contract") {
+        m_contracts->updateContractsList();
+        m_contracts->selectContract(thing);
         m_contractsAction->trigger();
+    }
     else if(type == "Proposal") {
         m_proposals->selectProposal(thing);
         m_proposalsAction->trigger();

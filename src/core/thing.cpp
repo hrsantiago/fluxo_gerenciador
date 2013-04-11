@@ -2,6 +2,7 @@
 #include "project.h"
 #include "event.h"
 #include "const.h"
+#include "view/mainwindow.h"
 
 Thing::Thing(const QString& type)
 {
@@ -85,6 +86,20 @@ QVariant Thing::get(const QString& key, const QVariant& def)
     return def;
 }
 
+void Thing::copy(Thing *other)
+{
+    for(QMap<QString, QVariant>::iterator it = other->m_properties.begin(); it != other->m_properties.end(); ++it)
+        if(it.key() != "type" && it.key() != "mainKey")
+            m_properties[it.key()] = it.value();
+
+    for(int i = 0; i < other->m_children.size(); ++i) {
+        Thing *child = new Thing(other->m_children[i]->getString("type"));
+        child->copy(other->m_children[i]);
+        child->setParent(this);
+        m_children.push_back(child);
+    }
+}
+
 void Thing::addChild(Thing *thing, int index)
 {
     if(index == -1)
@@ -130,6 +145,7 @@ bool Thing::removeChild(Thing *thing)
 bool Thing::removeChild(int index)
 {
     if(index >= 0 && index < m_children.size()) {
+        delete m_children[index];
         m_children.erase(m_children.begin()+index);
         return true;
     }
@@ -182,8 +198,17 @@ void Thing::onSet(const QString& key, const QVariant& value)
             addChild(event);
         }
         else if(key == "state" && value.toInt() == STATE_ACCEPTED) {
-            // TODO
-            // send client to contracts page
+            // Convert this proposal to a contract
+            Thing *contract = new Thing("Contract");
+            contract->copy(this);
+            contract->set("state", STATE_IN_PROGRESS);
+            contract->remove("template");
+            for(int i = 0; i < contract->m_children.size(); ++i)
+                if(contract->m_children[i]->getString("type") == "ProposalItem")
+                    contract->m_children[i]->set("type", "ContractItem");
+
+            g_project->addThing(contract);
+            g_mainWindow->selectThing(contract);
         }
     }
 }

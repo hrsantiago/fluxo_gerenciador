@@ -5,6 +5,12 @@
 #define DIALOG_MIN_WIDTH 480
 #define BACKUP_TIME 60*1000
 
+enum ContractState {
+    STATE_IN_PROGRESS,
+    STATE_COMPLETED,
+    STATE_CANCELED
+};
+
 enum ProposalState {
     STATE_PENDING,
     STATE_SENT,
