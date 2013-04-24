@@ -40,7 +40,7 @@ Contracts::Contracts()
     // Bottom
     m_itemsTable = new QTableWidget;
     m_itemsTable->setColumnCount(5);
-    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("#").arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg(tr("Amount")).split(","));
+    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("#").arg(tr("Description")).arg(tr("Unit")).arg(tr("Unit Price")).arg(tr("Amount")).split(","));
     m_itemsTable->verticalHeader()->hide();
     m_itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -127,7 +127,7 @@ void Contracts::updateItemsList()
 
     MyTableWidgetItem *currentItem = NULL;
 
-    const QVector<Thing*>& items = contract->getChildren("ContractItem");
+    const QVector<Thing*>& items = contract->getChildren("Item");
     for(int i = 0; i < items.size(); ++i) {
         MyTableWidgetItem *tableItem = addItem(items[i]);
         if(item == items[i])
@@ -150,7 +150,7 @@ MyTableWidgetItem *Contracts::addContract(Thing *contract)
     MyTableWidgetItem *state = new MyTableWidgetItem();
     ContractState stateValue = (ContractState)contract->getInt("state");
     if(stateValue == STATE_IN_PROGRESS) {
-        state->setIcon(QIcon("resources/images/pending.png"));
+        state->setIcon(QIcon("resources/images/process.png"));
         state->setToolTip(tr("In Progress"));
     }
     else if(stateValue == STATE_COMPLETED) {
@@ -192,7 +192,6 @@ MyTableWidgetItem *Contracts::addContract(Thing *contract)
     m_contractsTable->setItem(m_contractsTable->rowCount()-1, PHEADER_DESCRIPTION, description);
     m_contractsTable->setItem(m_contractsTable->rowCount()-1, PHEADER_CLIENT, client);
     m_contractsTable->setItem(m_contractsTable->rowCount()-1, PHEADER_DATE, date);
-    m_contractsTable->setItem(m_contractsTable->rowCount()-1, PHEADER_TEMPLATE, tp);
 
     return reference;
 }
@@ -215,8 +214,8 @@ MyTableWidgetItem *Contracts::addItem(Thing *item)
     unit->setFlags(unit->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *price = new MyTableWidgetItem();
-    price->setData(Qt::DisplayRole, item->get("price"));
-    price->setData(Qt::UserRole, item->get("price"));
+    price->setData(Qt::DisplayRole, item->get("unit price"));
+    price->setData(Qt::UserRole, item->get("unit price"));
     price->setFlags(price->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *amount = new MyTableWidgetItem();
@@ -228,7 +227,7 @@ MyTableWidgetItem *Contracts::addItem(Thing *item)
     m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_NUMBER, number);
     m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_DESCRIPTION, description);
     m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_UNIT, unit);
-    m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_PRICE, price);
+    m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_UNIT_PRICE, price);
     m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_AMOUNT, amount);
 
     return number;
@@ -372,10 +371,10 @@ void Contracts::onAddItemClicked(int index)
     layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
-        Thing *item = new Thing("ContractItem");
+        Thing *item = new Thing("Item");
         item->set("description", descriptionLineEdit->text());
         item->set("unit", unitLineEdit->text());
-        item->set("price", priceLineEdit->text().toDouble());
+        item->set("unit price", priceLineEdit->text().toDouble());
         item->set("amount", amountLineEdit->text().toInt());
         contract->addChild(item, index);
 
@@ -398,6 +397,7 @@ void Contracts::onRemoveItemClicked()
 
     Thing *contract = getCurrentContract();
     contract->removeChild(currentRow);
+    m_itemsTable->removeRow(currentRow);
 
     // Ids must be adjusted
     updateItemsList();
@@ -432,10 +432,9 @@ void Contracts::onContractsCellDoubleClicked(int row, int column)
     if(column == PHEADER_STATE) {
         nState = new QComboBox();
         nState->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        nState->addItem(QIcon("resources/images/pending.png"), tr("Pending"));
-        nState->addItem(QIcon("resources/images/sent.png"), tr("Sent"));
-        nState->addItem(QIcon("resources/images/accepted.png"), tr("Accepted"));
-        nState->addItem(QIcon("resources/images/declined.png"), tr("Declined"));
+        nState->addItem(QIcon("resources/images/process.png"), tr("In Progress"));
+        nState->addItem(QIcon("resources/images/accepted.png"), tr("Completed"));
+        nState->addItem(QIcon("resources/images/declined.png"), tr("Canceled"));
         nState->setCurrentIndex(contract->getInt("state"));
 
         layout->addWidget(new QLabel(tr("State:")), lrow, 0);
@@ -470,18 +469,6 @@ void Contracts::onContractsCellDoubleClicked(int row, int column)
 
         layout->addWidget(new QLabel(tr("Date:")), lrow, 0);
         layout->addWidget(nDate, lrow++, 1);
-    }
-    else if(column == PHEADER_TEMPLATE) {
-        nTemplate = new QComboBox();
-        nTemplate->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        const QVector<Thing*>& templates = g_project->getThings("Template");
-        for(int i = 0; i < templates.size(); ++i)
-            nTemplate->addItem(templates[i]->getString("name"));
-        nTemplate->model()->sort(0);
-        nTemplate->setCurrentIndex(nTemplate->findText(contract->getString("template")));
-
-        layout->addWidget(new QLabel(tr("Template:")), lrow, 0);
-        layout->addWidget(nTemplate, lrow++, 1);
     }
 
     layout->addLayout(Tools::createOkCancel(&dialog), lrow, 0, 1, 2);

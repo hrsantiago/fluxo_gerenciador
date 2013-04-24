@@ -17,15 +17,14 @@ public:
         PHEADER_REFERENCE,
         PHEADER_DESCRIPTION,
         PHEADER_CLIENT,
-        PHEADER_DATE,
-        PHEADER_TEMPLATE
+        PHEADER_DATE
     };
 
     enum ItemsTableHeader {
         IHEADER_NUMBER,
         IHEADER_DESCRIPTION,
         IHEADER_UNIT,
-        IHEADER_PRICE,
+        IHEADER_UNIT_PRICE,
         IHEADER_AMOUNT
     };
 

@@ -29,8 +29,9 @@ public:
 
     void copy(Thing *other);
 
-    void addChild(Thing *thing, int index = -1);
+    bool addChild(Thing *thing, int index = -1);
     int getChildIndex(Thing *thing);
+    Thing *getChild(const QString& type, const QString& mainKey);
     const QVector<Thing*>& getChildren() { return m_children; }
     QVector<Thing*> getChildren(const QString& type);
     bool removeChild(Thing *thing);

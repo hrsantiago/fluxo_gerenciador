@@ -26,7 +26,7 @@ public:
         IHEADER_NUMBER,
         IHEADER_DESCRIPTION,
         IHEADER_UNIT,
-        IHEADER_PRICE,
+        IHEADER_UNIT_PRICE,
         IHEADER_AMOUNT
     };
 
@@ -36,26 +36,32 @@ private:
     void updateProposalsList();
     void updateItemsList();
     MyTableWidgetItem *addProposal(Thing *proposal);
-    MyTableWidgetItem *addItem(Thing *item);
+    MyTableWidgetItem *addItem(QTableWidget *parent, Thing *item);
     Thing *getCurrentProposal();
+    Thing *getCurrentItemList();
     Thing *getCurrentItem();
+    QTableWidget *createItemsTable();
 
     Templates *m_templates;
     QTableWidget *m_proposalsTable;
-    QTableWidget *m_itemsTable;
-    QLabel *m_itemsLabel;
+    QTabWidget *m_itemListTabWidget;
+    QWidget *m_proposalsBottomWidget;
 
 private slots:
     void onAddProposalClicked();
     void onRemoveProposalClicked();
     void onAddItemClicked(int index = -1);
     void onRemoveItemClicked();
+    void onRenameItemListClicked();
 
     void onProposalsCurrentCellChanged(int currentRow, int , int previousRow, int );
     void onProposalsCellDoubleClicked(int row, int column);
     void onProposalsCustomContextMenuRequested(QPoint pos);
 
     void onItemsCustomContextMenuRequested(QPoint pos);
+
+    void onItemListAddClicked();
+    void onItemListCloseRequested(int index);
 
     void onProjectLoad();
 

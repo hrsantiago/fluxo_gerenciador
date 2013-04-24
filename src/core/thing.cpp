@@ -14,12 +14,12 @@ Thing::Thing(const QString& type)
         set("mainKey", "name");
     else if(type == "Contract")
         set("mainKey", "reference");
-    else if(type == "ContractItem")
-        set("mainKey", "id");
     else if(type == "Proposal")
         set("mainKey", "reference");
-    else if(type == "ProposalItem")
-        set("mainKey", "id");
+    else if(type == "ItemList")
+        set("mainKey", "name");
+    else if(type == "Item")
+        set("mainKey", "description");
     else if(type == "Person")
         set("mainKey", "name");
     else if(type == "Template")
@@ -100,14 +100,20 @@ void Thing::copy(Thing *other)
     }
 }
 
-void Thing::addChild(Thing *thing, int index)
+bool Thing::addChild(Thing *thing, int index)
 {
+    if(getChild(thing->getString("type"), thing->getString(thing->getString("mainKey")))) {
+        delete thing;
+        return false;
+    }
+
     if(index == -1)
         m_children.push_back(thing);
     else
         m_children.insert(m_children.begin() + index, thing);
     thing->setParent(this);
     g_project->setSaved(false);
+    return true;
 }
 
 int Thing::getChildIndex(Thing *thing)
@@ -117,6 +123,16 @@ int Thing::getChildIndex(Thing *thing)
             return i;
     }
     return -1;
+}
+
+Thing *Thing::getChild(const QString& type, const QString& mainKey)
+{
+    for(int i = 0; i < m_children.size(); ++i) {
+        Thing *child = m_children[i];
+        if(child->getString("type") == type && child->getString(child->getString("mainKey")) == mainKey)
+            return child;
+    }
+    return NULL;
 }
 
 QVector<Thing*> Thing::getChildren(const QString& type)
@@ -203,9 +219,6 @@ void Thing::onSet(const QString& key, const QVariant& value)
             contract->copy(this);
             contract->set("state", STATE_IN_PROGRESS);
             contract->remove("template");
-            for(int i = 0; i < contract->m_children.size(); ++i)
-                if(contract->m_children[i]->getString("type") == "ProposalItem")
-                    contract->m_children[i]->set("type", "ContractItem");
 
             g_project->addThing(contract);
             g_mainWindow->selectThing(contract);

@@ -40,35 +40,32 @@ Proposals::Proposals()
     gLayout->addWidget(m_proposalsTable, row, 0);
 
     // Bottom
-    m_itemsTable = new QTableWidget;
-    m_itemsTable->setColumnCount(5);
-    m_itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("#").arg(tr("Description")).arg(tr("Unit")).arg(tr("Price")).arg(tr("Amount")).split(","));
-    m_itemsTable->verticalHeader()->hide();
-    m_itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-    m_itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_itemsTable->setSortingEnabled(true);
-    m_itemsTable->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_itemsTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onItemsCustomContextMenuRequested(QPoint)));
+    m_itemListTabWidget = new QTabWidget();
+    m_itemListTabWidget->setTabsClosable(true);
 
-    m_itemsLabel = new QLabel(tr("List of items of proposal '%1':").arg(""));
+    QIcon icon = QIcon(QPixmap("resources/images/add.png").scaled(QSize(16, 16), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    QPushButton *addItemListButton = new QPushButton(icon, "");
+    m_itemListTabWidget->setCornerWidget(addItemListButton);
 
-    QWidget *bottom = new QWidget;
+    connect(addItemListButton, SIGNAL(clicked()), this, SLOT(onItemListAddClicked()));
+    connect(m_itemListTabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(onItemListCloseRequested(int)));
+
+    m_proposalsBottomWidget = new QWidget;
     gLayout = new QGridLayout();
-    bottom->setLayout(gLayout);
+    m_proposalsBottomWidget->setLayout(gLayout);
+    m_proposalsBottomWidget->hide();
 
     row = 0;
-    gLayout->addWidget(m_itemsLabel, row++, 0);
-    gLayout->addWidget(m_itemsTable, row, 0);
+    gLayout->addWidget(m_itemListTabWidget, row, 0);
 
     // Splitter
     QSplitter *vSplitter = new QSplitter(Qt::Vertical);
     tabWidget->addTab(vSplitter, tr("Proposals"));
 
     vSplitter->addWidget(top);
-    vSplitter->addWidget(bottom);
+    vSplitter->addWidget(m_proposalsBottomWidget);
     vSplitter->setStretchFactor(0, 30);
     vSplitter->setStretchFactor(1, 70);
-
 
     // Templates
     m_templates = new Templates();
@@ -109,45 +106,41 @@ void Proposals::updateProposalsList()
     else if(m_proposalsTable->rowCount() > 0)
         m_proposalsTable->selectRow(0);
 
+    if(m_proposalsTable->currentRow() != -1)
+        m_proposalsBottomWidget->show();
+    else
+        m_proposalsBottomWidget->hide();
+
     updateItemsList();
 }
 
 void Proposals::updateItemsList()
 {
-    Thing *item = NULL;
-    QTableWidgetItem *numberItem = m_itemsTable->item(m_itemsTable->currentRow(), IHEADER_NUMBER);
-    if(numberItem)
-        item = numberItem->data(Qt::UserRole).value<Thing*>();
-
-    m_itemsTable->setSortingEnabled(false);
-    m_itemsTable->clearContents();
-    m_itemsTable->setRowCount(0);
+    int currentIndex = m_itemListTabWidget->currentIndex();
+    m_itemListTabWidget->clear();
 
     Thing *proposal = getCurrentProposal();
-    if(!proposal) {
-        m_itemsTable->setSortingEnabled(true);
-        m_itemsTable->resizeColumnsToContents();
+    if(!proposal)
         return;
+
+    const QVector<Thing*>& itemListVector = proposal->getChildren("ItemList");
+    for(int i = 0; i < itemListVector.size(); ++i) {
+        Thing *child = itemListVector[i];
+
+        QTableWidget *tableWidget = createItemsTable();
+        m_itemListTabWidget->insertTab(0, tableWidget, child->getString(child->getString("mainKey")));
+
+        const QVector<Thing*>& itemsVector = child->getChildren("Item");
+        for(int j = 0; j < itemsVector.size(); ++j)
+            addItem(tableWidget, itemsVector[j]);
+
+        tableWidget->resizeColumnsToContents();
     }
 
-    m_itemsLabel->setText(tr("List of items of proposal '%1':").arg(proposal->getString("reference")));
-
-    MyTableWidgetItem *currentItem = NULL;
-
-    const QVector<Thing*>& items = proposal->getChildren("ProposalItem");
-    for(int i = 0; i < items.size(); ++i) {
-        MyTableWidgetItem *tableItem = addItem(items[i]);
-        if(item == items[i])
-            currentItem = tableItem;
-    }
-
-    m_itemsTable->setSortingEnabled(true);
-    m_itemsTable->resizeColumnsToContents();
-
-    if(currentItem)
-        m_itemsTable->selectRow(m_itemsTable->row(currentItem));
-    else if(m_itemsTable->rowCount() > 0)
-        m_itemsTable->selectRow(0);
+    if(currentIndex >= 0 && currentIndex < m_itemListTabWidget->count())
+        m_itemListTabWidget->setCurrentIndex(currentIndex);
+    else if(m_itemListTabWidget->count() > 0)
+        m_itemListTabWidget->setCurrentIndex(0);
 }
 
 MyTableWidgetItem *Proposals::addProposal(Thing *proposal)
@@ -208,7 +201,7 @@ MyTableWidgetItem *Proposals::addProposal(Thing *proposal)
     return reference;
 }
 
-MyTableWidgetItem *Proposals::addItem(Thing *item)
+MyTableWidgetItem *Proposals::addItem(QTableWidget *parent, Thing *item)
 {
     int id = item->getParent()->getChildIndex(item);
 
@@ -226,8 +219,8 @@ MyTableWidgetItem *Proposals::addItem(Thing *item)
     unit->setFlags(unit->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *price = new MyTableWidgetItem();
-    price->setData(Qt::DisplayRole, item->get("price"));
-    price->setData(Qt::UserRole, item->get("price"));
+    price->setData(Qt::DisplayRole, item->get("unit price"));
+    price->setData(Qt::UserRole, item->get("unit price"));
     price->setFlags(price->flags() & ~Qt::ItemIsEditable);
 
     MyTableWidgetItem *amount = new MyTableWidgetItem();
@@ -235,12 +228,12 @@ MyTableWidgetItem *Proposals::addItem(Thing *item)
     amount->setData(Qt::UserRole, item->get("amount"));
     amount->setFlags(amount->flags() & ~Qt::ItemIsEditable);
 
-    m_itemsTable->setRowCount(m_itemsTable->rowCount()+1);
-    m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_NUMBER, number);
-    m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_DESCRIPTION, description);
-    m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_UNIT, unit);
-    m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_PRICE, price);
-    m_itemsTable->setItem(m_itemsTable->rowCount()-1, IHEADER_AMOUNT, amount);
+    parent->setRowCount(parent->rowCount()+1);
+    parent->setItem(parent->rowCount()-1, IHEADER_NUMBER, number);
+    parent->setItem(parent->rowCount()-1, IHEADER_DESCRIPTION, description);
+    parent->setItem(parent->rowCount()-1, IHEADER_UNIT, unit);
+    parent->setItem(parent->rowCount()-1, IHEADER_UNIT_PRICE, price);
+    parent->setItem(parent->rowCount()-1, IHEADER_AMOUNT, amount);
 
     return number;
 }
@@ -266,14 +259,39 @@ Thing *Proposals::getCurrentProposal()
     return reference->data(Qt::UserRole).value<Thing*>();
 }
 
+Thing *Proposals::getCurrentItemList()
+{
+    Thing *proposal = getCurrentProposal();
+    if(!proposal)
+        return NULL;
+
+    QString name = m_itemListTabWidget->tabText(m_itemListTabWidget->currentIndex());
+    return proposal->getChild("ItemList", name);
+}
+
 Thing *Proposals::getCurrentItem()
 {
-    int currentRow = m_itemsTable->currentRow();
+    QTableWidget *tableWidget = qobject_cast<QTableWidget*>(m_itemListTabWidget->currentWidget());
+    int currentRow = tableWidget->currentRow();
     if(currentRow == -1)
         return NULL;
 
-    QTableWidgetItem *reference = m_itemsTable->item(currentRow, IHEADER_NUMBER);
+    QTableWidgetItem *reference = tableWidget->item(currentRow, IHEADER_NUMBER);
     return reference->data(Qt::UserRole).value<Thing*>();
+}
+
+QTableWidget *Proposals::createItemsTable()
+{
+    QTableWidget *itemsTable = new QTableWidget;
+    itemsTable->setColumnCount(5);
+    itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("#").arg(tr("Description")).arg(tr("Unit")).arg(tr("Unit Price")).arg(tr("Amount")).split(","));
+    itemsTable->verticalHeader()->hide();
+    itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    itemsTable->setSortingEnabled(true);
+    itemsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(itemsTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onItemsCustomContextMenuRequested(QPoint)));
+    return itemsTable;
 }
 
 void Proposals::onAddProposalClicked()
@@ -325,10 +343,16 @@ void Proposals::onAddProposalClicked()
         proposal->set("client", client->currentText());
         proposal->set("date", calendar->selectedDate());
         proposal->set("template", tp->currentText());
+
+        Thing *itemList = new Thing("ItemList");
+        itemList->set("name", tr("Item List %1").arg(1));
+        proposal->addChild(itemList);
+
         if(g_project->addThing(proposal)) {
             MyTableWidgetItem *item = addProposal(proposal);
             m_proposalsTable->setCurrentItem(item);
             m_proposalsTable->resizeColumnsToContents();
+            m_proposalsBottomWidget->show();
         }
         else
             qCritical() << tr("A proposal with this reference already exists.");
@@ -348,6 +372,9 @@ void Proposals::onRemoveProposalClicked()
 
     g_project->removeThing("Proposal", reference->text());
     m_proposalsTable->removeRow(currentRow);
+
+    if(m_proposalsTable->currentRow() == -1)
+        m_proposalsBottomWidget->hide();
 }
 
 void Proposals::onAddItemClicked(int index)
@@ -383,15 +410,21 @@ void Proposals::onAddItemClicked(int index)
     layout->addLayout(Tools::createOkCancel(&dialog), row, 0, 1, 2);
 
     if(dialog.exec() == QDialog::Accepted) {
-        Thing *item = new Thing("ProposalItem");
+        Thing *item = new Thing("Item");
         item->set("description", descriptionLineEdit->text());
         item->set("unit", unitLineEdit->text());
-        item->set("price", priceLineEdit->text().toDouble());
+        item->set("unit price", priceLineEdit->text().toDouble());
         item->set("amount", amountLineEdit->text().toInt());
-        proposal->addChild(item, index);
 
-        MyTableWidgetItem *addedItem = addItem(item);
-        m_itemsTable->setCurrentItem(addedItem);
+        Thing *itemList = getCurrentItemList();
+        if(!itemList->addChild(item, index)) {
+            qCritical() << tr("An item with this description already exist.");
+            return;
+        }
+
+        QTableWidget *tableWidget = qobject_cast<QTableWidget*>(m_itemListTabWidget->currentWidget());
+        MyTableWidgetItem *addedItem = addItem(tableWidget, item);
+        tableWidget->setCurrentItem(addedItem);
 
         // Ids must be adjusted
         updateItemsList();
@@ -400,18 +433,40 @@ void Proposals::onAddItemClicked(int index)
 
 void Proposals::onRemoveItemClicked()
 {
-    int currentRow = m_itemsTable->currentRow();
+    QTableWidget *tableWidget = qobject_cast<QTableWidget*>(m_itemListTabWidget->currentWidget());
+    int currentRow = tableWidget->currentRow();
     if(currentRow == -1)
         return;
 
     if(Tools::requestYesNoFromUser(tr("Remove Item"), tr("Do you really want to remove item #%1?").arg(currentRow+1)) == "No")
         return;
 
-    Thing *proposal = getCurrentProposal();
-    proposal->removeChild(currentRow);
+    Thing *item = getCurrentItem();
+    item->getParent()->removeChild(item);
 
     // Ids must be adjusted
+    tableWidget->removeRow(currentRow);
     updateItemsList();
+}
+
+void Proposals::onRenameItemListClicked()
+{
+    int currentIndex = m_itemListTabWidget->currentIndex();
+    QString name = m_itemListTabWidget->tabText(currentIndex);
+
+    QStringList a = Tools::requestDataFromUser(tr("Rename '%1'").arg(name), tr("Name").split(";"));
+    if(!Tools::isRequestedDataValid(a))
+        return;
+
+    Thing *itemList = getCurrentItemList();
+
+    if(itemList->getParent()->getChild("ItemList", a[0])) {
+        qCritical() << tr("An item list with this name already exists.");
+        return;
+    }
+
+    itemList->set("name", a[0]);
+    m_itemListTabWidget->setTabText(currentIndex, a[0]);
 }
 
 void Proposals::onProposalsCurrentCellChanged(int currentRow, int, int previousRow, int)
@@ -557,7 +612,8 @@ void Proposals::onProposalsCustomContextMenuRequested(QPoint pos)
 
 void Proposals::onItemsCustomContextMenuRequested(QPoint pos)
 {
-    QTableWidgetItem *currentItem = m_itemsTable->currentItem();
+    QTableWidget *tableWidget = qobject_cast<QTableWidget*>(sender());
+    QTableWidgetItem *currentItem = tableWidget->currentItem();
     QMenu menu(this);
     QAction *add = NULL;
     QAction *addBefore = NULL;
@@ -566,15 +622,20 @@ void Proposals::onItemsCustomContextMenuRequested(QPoint pos)
     QAction *remove = NULL;
 
     add = menu.addAction(tr("Add"));
-    if(currentItem && m_itemsTable->itemAt(pos) && currentItem->row() == m_itemsTable->itemAt(pos)->row()) {
+    if(currentItem && tableWidget->itemAt(pos) && currentItem->row() == tableWidget->itemAt(pos)->row()) {
         addBefore = menu.addAction(tr("Add before #%1").arg(currentItem->row()+1));
         addAfter = menu.addAction(tr("Add after #%1").arg(currentItem->row()+1));
         edit = menu.addAction(tr("Edit"));
         remove = menu.addAction(tr("Remove"));
     }
 
-    QAction *ret = menu.exec(m_itemsTable->viewport()->mapToGlobal(pos));
-    if(add &&ret == add) {
+    menu.addSeparator();
+
+    QString itemListName = m_itemListTabWidget->tabText(m_itemListTabWidget->currentIndex());
+    QAction *renameItemList = menu.addAction(tr("Rename '%1'").arg(itemListName));
+
+    QAction *ret = menu.exec(tableWidget->viewport()->mapToGlobal(pos));
+    if(add && ret == add) {
         onAddItemClicked();
     }
     else if(addBefore && ret == addBefore) {
@@ -589,11 +650,56 @@ void Proposals::onItemsCustomContextMenuRequested(QPoint pos)
     else if(remove && ret == remove) {
         onRemoveItemClicked();
     }
+    else if(renameItemList && ret == renameItemList) {
+        onRenameItemListClicked();
+    }
+}
+
+void Proposals::onItemListAddClicked()
+{
+    Thing *proposal = getCurrentProposal();
+    if(!proposal)
+        return;
+
+    QString name;
+    for(int i = 0; ; ++i) {
+        Thing *itemList = new Thing("ItemList");
+        name = tr("Item List %1").arg(i+1);
+        itemList->set("name", name);
+        if(proposal->addChild(itemList))
+            break;
+    }
+
+    int index = m_itemListTabWidget->insertTab(0, createItemsTable(), name);
+    m_itemListTabWidget->setCurrentIndex(index);
+}
+
+void Proposals::onItemListCloseRequested(int index)
+{
+    if(m_itemListTabWidget->count() == 1) {
+        qCritical() << tr("You must have at least 1 item list.");
+        return;
+    }
+
+    QString name = m_itemListTabWidget->tabText(index);
+    if(Tools::requestYesNoFromUser(tr("Remove Item List"), tr("Do you really want to remove item list '%1'?").arg(name)) == "No")
+        return;
+
+    Thing *proposal = getCurrentProposal();
+    if(!proposal)
+        return;
+
+
+    Thing *itemList = proposal->getChild("ItemList", name);
+    proposal->removeChild(itemList);
+    m_itemListTabWidget->removeTab(index);
 }
 
 void Proposals::onProjectLoad()
 {
     updateProposalsList();
     m_proposalsTable->sortItems(PHEADER_DATE, Qt::DescendingOrder);
-    m_itemsTable->sortItems(IHEADER_NUMBER);
+
+    QTableWidget *tableWidget = qobject_cast<QTableWidget*>(m_itemListTabWidget->currentWidget());
+    tableWidget->sortItems(IHEADER_NUMBER);
 }

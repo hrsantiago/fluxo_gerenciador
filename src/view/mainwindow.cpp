@@ -182,8 +182,6 @@ void MainWindow::selectThing(Thing *thing)
         m_proposals->selectProposal(thing);
         m_proposalsAction->trigger();
     }
-    else if(type == "ProposalItem")
-        m_proposalsAction->trigger();
     else if(type == "Person")
         m_peopleAction->trigger();
     else if(type == "Company")
