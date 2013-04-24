@@ -22,7 +22,8 @@ SOURCES += src/main.cpp\
     src/view/companies.cpp \
     src/view/templates.cpp \
     src/core/thing.cpp \
-    src/view/events.cpp
+    src/view/events.cpp \
+    src/view/itemlisttabwidget.cpp
 
 HEADERS  += src/view/mainwindow.h \
     src/core/project.h \
@@ -35,7 +36,8 @@ HEADERS  += src/view/mainwindow.h \
     src/core/thing.h \
     src/view/events.h \
     src/headers.h \
-    src/view/contracts.h
+    src/view/contracts.h \
+    src/view/itemlisttabwidget.h
 
 TRANSLATIONS = translations/pt-BR.ts
 win32:RC_FILE = src/resources.rc
