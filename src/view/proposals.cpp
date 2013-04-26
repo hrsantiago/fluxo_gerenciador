@@ -92,13 +92,15 @@ void Proposals::updateProposalsList()
     m_proposalsTable->setSortingEnabled(true);
     m_proposalsTable->resizeColumnsToContents();
 
+    m_itemListTabWidget->setParentThing(getCurrentProposal());
     if(currentItem)
         m_proposalsTable->selectRow(m_proposalsTable->row(currentItem));
-    else if(m_proposalsTable->rowCount() > 0)
+    else if(m_proposalsTable->rowCount() > 0) {
         m_proposalsTable->selectRow(0);
-
-    m_itemListTabWidget->setParentThing(getCurrentProposal());
-    m_itemListTabWidget->updateItemsList();
+        m_itemListTabWidget->updateItemsList();
+    }
+    else
+        m_itemListTabWidget->updateItemsList();
 }
 
 MyTableWidgetItem *Proposals::addProposal(Thing *proposal)
@@ -301,11 +303,13 @@ void Proposals::onProposalsCellDoubleClicked(int row, int column)
     }
     else if(column == PHEADER_REFERENCE) {
         nReference = new QLineEdit(proposal->getString("reference"));
+        nReference->selectAll();
         layout->addWidget(new QLabel(tr("Reference:")), lrow, 0);
         layout->addWidget(nReference, lrow++, 1);
     }
     else if(column == PHEADER_DESCRIPTION) {
         nDescription = new QLineEdit(proposal->getString("description"));
+        nDescription->selectAll();
         layout->addWidget(new QLabel(tr("Description:")), lrow, 0);
         layout->addWidget(nDescription, lrow++, 1);
     }

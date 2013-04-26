@@ -145,6 +145,22 @@ QVector<Thing*> Thing::getChildren(const QString& type)
     return things;
 }
 
+bool Thing::moveChild(int fromIndex, int toIndex)
+{
+    if(fromIndex < 0 || fromIndex >= m_children.size() || toIndex >= m_children.size())
+        return false;
+
+    Thing *child = m_children[fromIndex];
+    m_children.erase(m_children.begin()+fromIndex);
+
+    if(toIndex <= -1)
+        m_children.push_back(child);
+    else
+        m_children.insert(m_children.begin()+toIndex, child);
+
+    return true;
+}
+
 bool Thing::removeChild(Thing *thing)
 {
     for(QVector<Thing*>::iterator it = m_children.begin(); it != m_children.end(); ++it) {

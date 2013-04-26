@@ -36,6 +36,55 @@ Thing *ItemListTabWidget::getCurrentItem()
     return reference->data(Qt::UserRole).value<Thing*>();
 }
 
+QString ItemListTabWidget::getTableHTML(Thing *itemList)
+{
+    QString table;
+
+    table += "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\">\n";
+
+    table += QString("<tr>\n"
+                     " <td align=\"center\" colspan=\"6\"> %1 <br/></td>\n"
+                     "</tr>\n").arg(itemList->getString("name"));
+
+    table += QString("<tr>\n"
+                     " <td align=\"center\"> #  </td>\n"
+                     " <td align=\"center\"> %1 </td>\n"
+                     " <td align=\"center\"> %2 </td>\n"
+                     " <td align=\"center\"> %3 </td>\n"
+                     " <td align=\"center\"> %4 </td>\n"
+                     " <td align=\"center\"> %5 </td>\n"
+                     "</tr>\n").arg(tr("Description")).arg(tr("Unit")).arg(tr("Unit Price")).arg(tr("Amount")).arg(tr("Price"));
+
+    float totalPrice = 0;
+    const QVector<Thing*>& items = itemList->getChildren("Item");
+    for(int i = 0; i < items.size(); ++i) {
+        Thing *item = items[i];
+        int id = i + 1;
+        QString description = item->getString("description");
+        QString unit = item->getString("unit");
+        float unitPrice = item->getFloat("unit price");
+        int amount = item->getInt("amount");
+        float itemPrice = unitPrice * amount;
+        totalPrice += itemPrice;
+        table += QString("<tr>\n"
+                         " <td align=\"center\"> %1 </td>\n"
+                         " <td                 > %2 </td>\n"
+                         " <td align=\"center\"> %3 </td>\n"
+                         " <td align=\"right\" > %4 </td>\n"
+                         " <td align=\"center\"> %5 </td>\n"
+                         " <td align=\"right\" > %6 </td>\n"
+                         "</tr>\n").arg(id).arg(description).arg(unit).arg(unitPrice, 2, 'f', 2).arg(amount).arg(itemPrice, 2, 'f', 2);
+    }
+
+    table += QString("<tr>\n"
+                     " <td align=\"right\" colspan=\"5\"> %1 </td>\n"
+                     " <td align=\"right\"> %2 </td>\n"
+                     "</tr>\n").arg(tr("Total Price:")).arg(totalPrice, 2, 'f', 2);
+
+    table += "</table>\n";
+    return table;
+}
+
 void ItemListTabWidget::updateItemsList()
 {
     int cIndex = currentIndex();
@@ -69,6 +118,15 @@ void ItemListTabWidget::updateItemsList()
         setCurrentIndex(0);
 }
 
+void ItemListTabWidget::updateItemListIds(QTableWidget *tableWidget)
+{
+    for(int i = 0; i < tableWidget->rowCount(); ++i) {
+        QTableWidgetItem *item = tableWidget->item(i, IHEADER_NUMBER);
+        Thing *thing = item->data(Qt::UserRole).value<Thing*>();
+        item->setData(Qt::DisplayRole, thing->getParent()->getChildIndex(thing)+1);
+    }
+}
+
 QTableWidget *ItemListTabWidget::createItemsTable()
 {
     QTableWidget *itemsTable = new QTableWidget;
@@ -79,6 +137,7 @@ QTableWidget *ItemListTabWidget::createItemsTable()
     itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     itemsTable->setSortingEnabled(true);
     itemsTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(itemsTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(onItemsCellDoubleClicked(int, int)));
     connect(itemsTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onItemsCustomContextMenuRequested(QPoint)));
     return itemsTable;
 }
@@ -161,12 +220,14 @@ void ItemListTabWidget::onRenameItemListClicked()
 {
     QString name = tabText(currentIndex());
 
-    QStringList a = Tools::requestDataFromUser(tr("Rename '%1'").arg(name), tr("Name").split(";"));
+    QMap<int, QString> defaultData;
+    defaultData[0] = QString("QLineEdit|%1").arg(name);
+
+    QStringList a = Tools::requestDataFromUser(tr("Rename item list"), tr("Name").split(";"), defaultData);
     if(!Tools::isRequestedDataValid(a))
         return;
 
     Thing *itemList = getCurrentItemList();
-
     if(itemList->getParent()->getChild("ItemList", a[0])) {
         qCritical() << tr("An item list with this name already exists.");
         return;
@@ -226,11 +287,7 @@ void ItemListTabWidget::onAddItemClicked(int index)
         MyTableWidgetItem *addedItem = addItem(tableWidget, item);
         tableWidget->setCurrentItem(addedItem);
 
-        for(int i = 0; i < tableWidget->rowCount(); ++i) {
-            QTableWidgetItem *item = tableWidget->item(i, IHEADER_NUMBER);
-            Thing *thing = item->data(Qt::UserRole).value<Thing*>();
-            item->setData(Qt::DisplayRole, thing->getParent()->getChildIndex(thing)+1);
-        }
+        updateItemListIds(tableWidget);
         tableWidget->setSortingEnabled(true);
     }
 }
@@ -248,9 +305,102 @@ void ItemListTabWidget::onRemoveItemClicked()
     Thing *item = getCurrentItem();
     item->getParent()->removeChild(item);
 
-    // Ids must be adjusted
     tableWidget->removeRow(currentRow);
-    updateItemsList();
+
+    tableWidget->setSortingEnabled(false);
+    updateItemListIds(tableWidget);
+    tableWidget->setSortingEnabled(true);
+}
+
+void ItemListTabWidget::onItemsCellDoubleClicked(int row, int column)
+{
+    QTableWidget *tableWidget = qobject_cast<QTableWidget*>(sender());
+    QTableWidgetItem *itemIdWidget = tableWidget->item(row, IHEADER_NUMBER);
+    Thing *itemList = itemIdWidget->data(Qt::UserRole).value<Thing*>();
+    Thing *parent = itemList->getParent();
+    int itemId = parent->getChildIndex(itemList);
+
+    QDialog dialog;
+    dialog.setWindowTitle(tr("Edit Item %1").arg(itemIdWidget->text()));
+    dialog.setMinimumWidth(DIALOG_MIN_WIDTH);
+
+    QGridLayout *layout = new QGridLayout();
+    dialog.setLayout(layout);
+
+    QLineEdit *nId = NULL;
+    QLineEdit *nDescription = NULL;
+    QLineEdit *nUnit = NULL;
+    QLineEdit *nUnitPrice = NULL;
+    QLineEdit *nAmount = NULL;
+
+    int lrow = 0;
+    if(column == IHEADER_NUMBER) {
+        nId = new QLineEdit(QString::number(itemId+1));
+        nId->selectAll();
+        layout->addWidget(new QLabel(tr("Id:")), lrow, 0);
+        layout->addWidget(nId, lrow++, 1);
+    }
+    else if(column == IHEADER_DESCRIPTION) {
+        nDescription = new QLineEdit(itemList->getString("description"));
+        nDescription->selectAll();
+        layout->addWidget(new QLabel(tr("Description:")), lrow, 0);
+        layout->addWidget(nDescription, lrow++, 1);
+    }
+    else if(column == IHEADER_UNIT) {
+        nUnit = new QLineEdit(itemList->getString("unit"));
+        nUnit->selectAll();
+        layout->addWidget(new QLabel(tr("Unit:")), lrow, 0);
+        layout->addWidget(nUnit, lrow++, 1);
+    }
+    else if(column == IHEADER_UNIT_PRICE) {
+        nUnitPrice = new QLineEdit(itemList->getString("unit price"));
+        nUnitPrice->selectAll();
+        layout->addWidget(new QLabel(tr("Unit Price:")), lrow, 0);
+        layout->addWidget(nUnitPrice, lrow++, 1);
+    }
+    else if(column == IHEADER_AMOUNT) {
+        nAmount = new QLineEdit(itemList->getString("amount"));
+        nAmount->selectAll();
+        layout->addWidget(new QLabel(tr("Amount:")), lrow, 0);
+        layout->addWidget(nAmount, lrow++, 1);
+    }
+
+    layout->addLayout(Tools::createOkCancel(&dialog), lrow, 0, 1, 2);
+
+    if(dialog.exec() == QDialog::Accepted) {
+        QTableWidgetItem *itemWidget = tableWidget->item(row, column);
+        if(nId) {
+            parent->moveChild(itemId, nId->text().toInt()-1);
+            itemWidget->setData(Qt::DisplayRole, parent->getChildIndex(itemList)+1);
+
+            tableWidget->setSortingEnabled(false);
+            updateItemListIds(tableWidget);
+            tableWidget->setSortingEnabled(true);
+        }
+        else if(nDescription) {
+            if(parent->getChild("ItemList", nDescription->text()))
+                qCritical() << "An item list with this description already exists.";
+            else {
+                itemList->set("description", nDescription->text(), true);
+                itemWidget->setData(Qt::DisplayRole, nDescription->text());
+            }
+        }
+        else if(nUnit) {
+            itemList->set("unit", nUnit->text(), true);
+            itemWidget->setData(Qt::DisplayRole, nUnit->text());
+        }
+        else if(nUnitPrice) {
+            itemList->set("unit price", nUnitPrice->text(), true);
+            itemWidget->setData(Qt::DisplayRole, nUnitPrice->text());
+            itemWidget->setData(Qt::UserRole, nUnitPrice->text().toInt());
+        }
+        else if(nAmount) {
+            itemList->set("amount", nAmount->text(), true);
+            itemWidget->setData(Qt::DisplayRole, nAmount->text());
+            itemWidget->setData(Qt::UserRole, nAmount->text().toInt());
+        }
+        tableWidget->selectRow(itemWidget->row());
+    }
 }
 
 void ItemListTabWidget::onItemsCustomContextMenuRequested(QPoint pos)
@@ -276,8 +426,9 @@ void ItemListTabWidget::onItemsCustomContextMenuRequested(QPoint pos)
 
     menu.addSeparator();
 
-    QString itemListName = tabText(currentIndex());
-    QAction *renameItemList = menu.addAction(tr("Rename '%1'").arg(itemListName));
+    QAction *viewItemList = menu.addAction(tr("View item list"));
+    QAction *exportItemList = menu.addAction(tr("Export item list"));
+    QAction *renameItemList = menu.addAction(tr("Rename item list"));
 
     QAction *ret = menu.exec(tableWidget->viewport()->mapToGlobal(pos));
     if(add && ret == add) {
@@ -290,10 +441,20 @@ void ItemListTabWidget::onItemsCustomContextMenuRequested(QPoint pos)
         onAddItemClicked(id);
     }
     else if(edit && ret == edit) {
-
+        onItemsCellDoubleClicked(currentItem->row(), currentItem->column());
     }
     else if(remove && ret == remove) {
         onRemoveItemClicked();
+    }
+    else if(viewItemList && ret == viewItemList) {
+        QString html = getTableHTML(getCurrentItemList());
+
+        QTextEdit *base = new QTextEdit();
+        base->setHtml(html);
+        base->setMinimumSize(640, 480);
+        base->show();
+    }
+    else if(exportItemList && ret == exportItemList) {
     }
     else if(renameItemList && ret == renameItemList) {
         onRenameItemListClicked();

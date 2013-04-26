@@ -355,125 +355,171 @@
 <context>
     <name>ItemListTabWidget</name>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="71"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="56"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="134"/>
         <source>Description</source>
         <translation>Descrição</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="71"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="56"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="134"/>
         <source>Unit</source>
         <translation>Unidade</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="71"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="56"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="134"/>
         <source>Unit Price</source>
         <translation>Preço Unitário</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="71"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="56"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="134"/>
         <source>Amount</source>
         <translation>Quantidade</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="126"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="56"/>
+        <source>Price</source>
+        <translation>Preço</translation>
+    </message>
+    <message>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="82"/>
+        <source>Total Price:</source>
+        <translation>Preço Total:</translation>
+    </message>
+    <message>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="190"/>
         <source>Item List %1</source>
         <translation>Lista de Itens %1</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="139"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="203"/>
         <source>You must have at least 1 item list.</source>
         <translation>Deve haver ao menos uma lista de itens.</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="144"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="208"/>
         <source>Remove Item List</source>
         <translation>Remover Lista de Itens</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="144"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="208"/>
         <source>Do you really want to remove item list &apos;%1&apos;?</source>
         <translation>Você realmente quer remover a lista de itens &apos;%1&apos;?</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="159"/>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="267"/>
         <source>Rename &apos;%1&apos;</source>
-        <translation>Renomear &apos;%1&apos;</translation>
+        <translation type="obsolete">Renomear &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="159"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="226"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="166"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="226"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="431"/>
+        <source>Rename item list</source>
+        <translation>Renomear lista de itens</translation>
+    </message>
+    <message>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="232"/>
         <source>An item list with this name already exists.</source>
         <translation>Uma lista de itens com este nome já existe.</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="180"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="246"/>
         <source>Add Item</source>
         <translation>Adicionar Item</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="187"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="253"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="346"/>
         <source>Description:</source>
         <translation>Descrição:</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="191"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="257"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="352"/>
         <source>Unit:</source>
         <translation>Unidade:</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="195"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="261"/>
         <source>Price:</source>
         <translation>Preço:</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="199"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="265"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="364"/>
         <source>Amount:</source>
         <translation>Quantidade:</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="214"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="280"/>
         <source>An item with this description already exist.</source>
         <translation>Um item com esta descrição já existe.</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="234"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="302"/>
         <source>Remove Item</source>
         <translation>Remover Item</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="234"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="302"/>
         <source>Do you really want to remove item #%1?</source>
         <translation>Você realmente quer remover o item #%1?</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="256"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="324"/>
+        <source>Edit Item %1</source>
+        <translation>Editar item %1</translation>
+    </message>
+    <message>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="340"/>
+        <source>Id:</source>
+        <translation>Id:</translation>
+    </message>
+    <message>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="358"/>
+        <source>Unit Price:</source>
+        <translation>Preço Unitário:</translation>
+    </message>
+    <message>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="418"/>
         <source>Add</source>
         <translation>Adicionar</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="258"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="421"/>
         <source>Add before #%1</source>
         <translation>Adicionar antes #%1</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="259"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="422"/>
         <source>Add after #%1</source>
         <translation>Adicionar após #%1</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="260"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="423"/>
         <source>Edit</source>
         <translation>Editar</translation>
     </message>
     <message>
-        <location filename="../src/view/itemlisttabwidget.cpp" line="261"/>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="424"/>
         <source>Remove</source>
         <translation>Remover</translation>
+    </message>
+    <message>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="429"/>
+        <source>View item list</source>
+        <translation>Visualizar lista de itens</translation>
+    </message>
+    <message>
+        <location filename="../src/view/itemlisttabwidget.cpp" line="430"/>
+        <source>Export item list</source>
+        <translation>Exportar lista de itens</translation>
     </message>
 </context>
 <context>
@@ -788,26 +834,26 @@
         <translation>Estatísticas</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="112"/>
-        <location filename="../src/view/proposals.cpp" line="293"/>
+        <location filename="../src/view/proposals.cpp" line="114"/>
+        <location filename="../src/view/proposals.cpp" line="295"/>
         <source>Pending</source>
         <translation>Pendente</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="116"/>
-        <location filename="../src/view/proposals.cpp" line="294"/>
+        <location filename="../src/view/proposals.cpp" line="118"/>
+        <location filename="../src/view/proposals.cpp" line="296"/>
         <source>Sent</source>
         <translation>Enviado</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="120"/>
-        <location filename="../src/view/proposals.cpp" line="295"/>
+        <location filename="../src/view/proposals.cpp" line="122"/>
+        <location filename="../src/view/proposals.cpp" line="297"/>
         <source>Accepted</source>
         <translation>Aceito</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="124"/>
-        <location filename="../src/view/proposals.cpp" line="296"/>
+        <location filename="../src/view/proposals.cpp" line="126"/>
+        <location filename="../src/view/proposals.cpp" line="298"/>
         <source>Declined</source>
         <translation>Declinado</translation>
     </message>
@@ -816,51 +862,51 @@
         <translation type="obsolete">Preço Unitário</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="186"/>
+        <location filename="../src/view/proposals.cpp" line="188"/>
         <source>Add Proposal</source>
         <translation>Adicionar Proposta</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="193"/>
-        <location filename="../src/view/proposals.cpp" line="304"/>
+        <location filename="../src/view/proposals.cpp" line="195"/>
+        <location filename="../src/view/proposals.cpp" line="307"/>
         <source>Reference:</source>
         <translation>Referência:</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="197"/>
-        <location filename="../src/view/proposals.cpp" line="309"/>
+        <location filename="../src/view/proposals.cpp" line="199"/>
+        <location filename="../src/view/proposals.cpp" line="313"/>
         <source>Description:</source>
         <translation>Descrição:</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="209"/>
-        <location filename="../src/view/proposals.cpp" line="329"/>
+        <location filename="../src/view/proposals.cpp" line="211"/>
+        <location filename="../src/view/proposals.cpp" line="333"/>
         <source>Date:</source>
         <translation>Data:</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="214"/>
-        <location filename="../src/view/proposals.cpp" line="341"/>
+        <location filename="../src/view/proposals.cpp" line="216"/>
+        <location filename="../src/view/proposals.cpp" line="345"/>
         <source>Template:</source>
         <translation>Modelo:</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="234"/>
+        <location filename="../src/view/proposals.cpp" line="236"/>
         <source>Item List %1</source>
         <translation>Lista de Itens %1</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="243"/>
+        <location filename="../src/view/proposals.cpp" line="245"/>
         <source>A proposal with this reference already exists.</source>
         <translation>Uma proposta com essa referência já existe.</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="255"/>
+        <location filename="../src/view/proposals.cpp" line="257"/>
         <source>Remove Proposal</source>
         <translation>Remover Proposta</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="255"/>
+        <location filename="../src/view/proposals.cpp" line="257"/>
         <source>Do you really want to remove proposal %1?</source>
         <translation>Você realmente quer remover a proposta %1?</translation>
     </message>
@@ -905,32 +951,32 @@
         <translation type="obsolete">Uma lista de itens com este nome já existe.</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="276"/>
+        <location filename="../src/view/proposals.cpp" line="278"/>
         <source>Edit Proposal %1</source>
         <translation>Editar Proposta %1</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="299"/>
+        <location filename="../src/view/proposals.cpp" line="301"/>
         <source>State:</source>
         <translation>Estado:</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="382"/>
+        <location filename="../src/view/proposals.cpp" line="386"/>
         <source>Add</source>
         <translation>Adicionar</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="384"/>
+        <location filename="../src/view/proposals.cpp" line="388"/>
         <source>Edit</source>
         <translation>Editar</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="385"/>
+        <location filename="../src/view/proposals.cpp" line="389"/>
         <source>Remove</source>
         <translation>Remover</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="386"/>
+        <location filename="../src/view/proposals.cpp" line="390"/>
         <source>View</source>
         <translation>Visualizar</translation>
     </message>
@@ -955,8 +1001,8 @@
         <translation type="obsolete">Você realmente quer remover a lista de itens &apos;%1&apos;?</translation>
     </message>
     <message>
-        <location filename="../src/view/proposals.cpp" line="201"/>
-        <location filename="../src/view/proposals.cpp" line="321"/>
+        <location filename="../src/view/proposals.cpp" line="203"/>
+        <location filename="../src/view/proposals.cpp" line="325"/>
         <source>Client:</source>
         <translation>Cliente:</translation>
     </message>

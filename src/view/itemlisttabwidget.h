@@ -23,8 +23,10 @@ public:
     void setParentThing(Thing *thing) { m_parentThing = thing; }
 
     void updateItemsList();
+    void updateItemListIds(QTableWidget *tableWidget);
     Thing *getCurrentItemList();
     Thing *getCurrentItem();
+    QString getTableHTML(Thing *itemList);
 
 private:
     QTableWidget *createItemsTable();
@@ -39,6 +41,7 @@ private slots:
 
     void onAddItemClicked(int index = -1);
     void onRemoveItemClicked();
+    void onItemsCellDoubleClicked(int row, int column);
     void onItemsCustomContextMenuRequested(QPoint pos);
 
 };
