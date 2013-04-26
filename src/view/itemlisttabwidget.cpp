@@ -7,6 +7,7 @@ ItemListTabWidget::ItemListTabWidget(QWidget *parent) :
     m_parentThing = NULL;
 
     setTabsClosable(true);
+    setMovable(true);
 
     QIcon icon = QIcon(QPixmap("resources/images/add.png").scaled(QSize(16, 16), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     QPushButton *addItemListButton = new QPushButton(icon, "");
@@ -14,6 +15,7 @@ ItemListTabWidget::ItemListTabWidget(QWidget *parent) :
 
     connect(addItemListButton, SIGNAL(clicked()), this, SLOT(onItemListAddClicked()));
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(onItemListCloseRequested(int)));
+    connect(tabBar(), SIGNAL(tabMoved(int,int)), this, SLOT(onItemListTabMoved(int,int)));
 }
 
 Thing *ItemListTabWidget::getCurrentItemList()
@@ -98,7 +100,7 @@ void ItemListTabWidget::updateItemsList()
         Thing *child = itemListVector[i];
 
         QTableWidget *tableWidget = createItemsTable();
-        insertTab(0, tableWidget, child->getString(child->getString("mainKey")));
+        addTab(tableWidget, child->getString(child->getString("mainKey")));
 
         tableWidget->setSortingEnabled(false);
         const QVector<Thing*>& itemsVector = child->getChildren("Item");
@@ -193,8 +195,12 @@ void ItemListTabWidget::onItemListAddClicked()
             break;
     }
 
-    int index = insertTab(0, createItemsTable(), name);
+    int index = addTab(createItemsTable(), name);
     setCurrentIndex(index);
+
+    QTableWidget *tableWidget = qobject_cast<QTableWidget*>(currentWidget());
+    tableWidget->resizeColumnsToContents();
+    tableWidget->sortItems(IHEADER_NUMBER, Qt::AscendingOrder);
 }
 
 void ItemListTabWidget::onItemListCloseRequested(int index)
@@ -214,6 +220,15 @@ void ItemListTabWidget::onItemListCloseRequested(int index)
     Thing *itemList = m_parentThing->getChild("ItemList", name);
     m_parentThing->removeChild(itemList);
     removeTab(index);
+}
+
+void ItemListTabWidget::onItemListTabMoved(int from, int to)
+{
+    Thing *thing1 = m_parentThing->getChild("ItemList", tabText(from));
+    Thing *thing2 = m_parentThing->getChild("ItemList", tabText(to));
+    int indexFrom = m_parentThing->getChildIndex(thing1);
+    int indexTo = m_parentThing->getChildIndex(thing2);
+    m_parentThing->swapChild(indexFrom, indexTo);
 }
 
 void ItemListTabWidget::onRenameItemListClicked()
@@ -426,9 +441,10 @@ void ItemListTabWidget::onItemsCustomContextMenuRequested(QPoint pos)
 
     menu.addSeparator();
 
+    QAction *renameItemList = menu.addAction(tr("Rename item list"));
     QAction *viewItemList = menu.addAction(tr("View item list"));
     QAction *exportItemList = menu.addAction(tr("Export item list"));
-    QAction *renameItemList = menu.addAction(tr("Rename item list"));
+    QAction *exportAllItemList = menu.addAction(tr("Export all item list"));
 
     QAction *ret = menu.exec(tableWidget->viewport()->mapToGlobal(pos));
     if(add && ret == add) {
@@ -446,6 +462,9 @@ void ItemListTabWidget::onItemsCustomContextMenuRequested(QPoint pos)
     else if(remove && ret == remove) {
         onRemoveItemClicked();
     }
+    else if(renameItemList && ret == renameItemList) {
+        onRenameItemListClicked();
+    }
     else if(viewItemList && ret == viewItemList) {
         QString html = getTableHTML(getCurrentItemList());
 
@@ -455,8 +474,31 @@ void ItemListTabWidget::onItemsCustomContextMenuRequested(QPoint pos)
         base->show();
     }
     else if(exportItemList && ret == exportItemList) {
+        QString filename = QFileDialog::getSaveFileName(this, tr("Save"), "itemlist.html", tr("Item List (*.html)"));
+        if(!filename.isEmpty()) {
+            QFile file(filename);
+            file.open(QIODevice::WriteOnly);
+            QString html = getTableHTML(getCurrentItemList());
+            file.write(html.toLatin1());
+            file.close();
+            return;
+        }
     }
-    else if(renameItemList && ret == renameItemList) {
-        onRenameItemListClicked();
+    else if(exportAllItemList && ret == exportAllItemList) {
+        QString filename = QFileDialog::getSaveFileName(this, tr("Save"), "itemlistall.html", tr("Item List (*.html)"));
+        if(!filename.isEmpty()) {
+            QFile file(filename);
+            file.open(QIODevice::WriteOnly);
+
+            const QVector<Thing*>& itemListVector = m_parentThing->getChildren("ItemList");
+            for(int i = 0; i < itemListVector.size(); ++i) {
+                QString html = getTableHTML(itemListVector[i]);
+                html += "<br/><br/>\n";
+                file.write(html.toLatin1());
+            }
+
+            file.close();
+            return;
+        }
     }
 }

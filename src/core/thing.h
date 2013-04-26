@@ -36,6 +36,7 @@ public:
     const QVector<Thing*>& getChildren() { return m_children; }
     QVector<Thing*> getChildren(const QString& type);
     bool moveChild(int fromIndex, int toIndex = -1);
+    bool swapChild(int index1, int index2);
     bool removeChild(Thing *thing);
     bool removeChild(int index);
     void clearChildren();

@@ -37,6 +37,7 @@ private:
 private slots:
     void onItemListAddClicked();
     void onItemListCloseRequested(int index);
+    void onItemListTabMoved(int from, int to);
     void onRenameItemListClicked();
 
     void onAddItemClicked(int index = -1);

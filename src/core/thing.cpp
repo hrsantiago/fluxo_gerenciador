@@ -158,6 +158,25 @@ bool Thing::moveChild(int fromIndex, int toIndex)
     else
         m_children.insert(m_children.begin()+toIndex, child);
 
+    g_project->setSaved(false);
+    return true;
+}
+
+bool Thing::swapChild(int index1, int index2)
+{
+    if(index1 < 0 || index1 >= m_children.size() || index2 < 0 || index2 >= m_children.size())
+        return false;
+
+    Thing *thing1 = m_children[index1];
+    Thing *thing2 = m_children[index2];
+
+    m_children.erase(m_children.begin()+index1);
+    m_children.insert(m_children.begin()+index1, thing2);
+
+    m_children.erase(m_children.begin()+index2);
+    m_children.insert(m_children.begin()+index2, thing1);
+
+    g_project->setSaved(false);
     return true;
 }
 
@@ -179,6 +198,7 @@ bool Thing::removeChild(int index)
     if(index >= 0 && index < m_children.size()) {
         delete m_children[index];
         m_children.erase(m_children.begin()+index);
+        g_project->setSaved(false);
         return true;
     }
     return false;
@@ -186,9 +206,13 @@ bool Thing::removeChild(int index)
 
 void Thing::clearChildren()
 {
-    for(int i = 0; i < m_children.size(); ++i)
-        delete m_children[i];
-    m_children.clear();
+    if(m_children.size() > 0)
+        g_project->setSaved(false);
+    else {
+        for(int i = 0; i < m_children.size(); ++i)
+            delete m_children[i];
+        m_children.clear();
+    }
 }
 
 void Thing::clearChildren(const QString& type)
