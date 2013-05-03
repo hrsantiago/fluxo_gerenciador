@@ -43,7 +43,7 @@ public:
     void clearChildren(const QString& type);
 
 public slots:
-    void onSet(const QString&, const QVariant&);
+    void onSet(const QString& key, const QVariant& value);
 
 private:
     QMap<QString, QVariant> m_properties;

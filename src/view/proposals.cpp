@@ -19,9 +19,10 @@ Proposals::Proposals()
     int row;
 
     // Top
+    QStringList headerLabels = QString("%1,%2,%3,%4,%5,%6").arg("*").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).arg(tr("Template")).split(",");
     m_proposalsTable = new QTableWidget;
-    m_proposalsTable->setColumnCount(6);
-    m_proposalsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5,%6").arg("*").arg(tr("Reference")).arg(tr("Description")).arg(tr("Client")).arg(tr("Date")).arg(tr("Template")).split(","));
+    m_proposalsTable->setColumnCount(headerLabels.size());
+    m_proposalsTable->setHorizontalHeaderLabels(headerLabels);
     m_proposalsTable->verticalHeader()->hide();
     m_proposalsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     m_proposalsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -235,6 +236,12 @@ void Proposals::onAddProposalClicked()
         Thing *itemList = new Thing("ItemList");
         itemList->set("name", tr("Item List %1").arg(1));
         proposal->addChild(itemList);
+
+        Thing *event = new Thing("Event");
+        event->set("id", "proposal_waiting_send");
+        event->set("identifier", proposal->get("reference"));
+        event->set("date", QDate::currentDate().addDays(1));
+        proposal->addChild(event);
 
         if(g_project->addThing(proposal)) {
             MyTableWidgetItem *item = addProposal(proposal);

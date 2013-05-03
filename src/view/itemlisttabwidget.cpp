@@ -1,9 +1,10 @@
 #include "itemlisttabwidget.h"
 #include "const.h"
 
-ItemListTabWidget::ItemListTabWidget(QWidget *parent) :
+ItemListTabWidget::ItemListTabWidget(const QVector<ExtraItem*> &extraItems, QWidget *parent) :
     QTabWidget(parent)
 {
+    m_extraItems = extraItems;
     m_parentThing = NULL;
 
     setTabsClosable(true);
@@ -131,9 +132,13 @@ void ItemListTabWidget::updateItemListIds(QTableWidget *tableWidget)
 
 QTableWidget *ItemListTabWidget::createItemsTable()
 {
+    QStringList headerLabels = QString("%1,%2,%3,%4,%5").arg("#").arg(tr("Description")).arg(tr("Unit")).arg(tr("Unit Price")).arg(tr("Amount")).split(",");
+    for(int i = 0; i < m_extraItems.size(); ++i)
+        headerLabels.push_back(m_extraItems[i]->headerName);
+
     QTableWidget *itemsTable = new QTableWidget;
-    itemsTable->setColumnCount(5);
-    itemsTable->setHorizontalHeaderLabels(QString("%1,%2,%3,%4,%5").arg("#").arg(tr("Description")).arg(tr("Unit")).arg(tr("Unit Price")).arg(tr("Amount")).split(","));
+    itemsTable->setColumnCount(headerLabels.size());
+    itemsTable->setHorizontalHeaderLabels(headerLabels);
     itemsTable->verticalHeader()->hide();
     itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -177,6 +182,14 @@ MyTableWidgetItem *ItemListTabWidget::addItem(QTableWidget *parent, Thing *item)
     parent->setItem(parent->rowCount()-1, IHEADER_UNIT, unit);
     parent->setItem(parent->rowCount()-1, IHEADER_UNIT_PRICE, price);
     parent->setItem(parent->rowCount()-1, IHEADER_AMOUNT, amount);
+
+    for(int i = 0; i < m_extraItems.size(); ++i) {
+        MyTableWidgetItem *extra = new MyTableWidgetItem();
+        extra->setData(Qt::DisplayRole, item->get(m_extraItems[i]->thingName));
+        extra->setData(Qt::UserRole, item->get(m_extraItems[i]->thingName));
+        extra->setFlags(extra->flags() & ~Qt::ItemIsEditable);
+        parent->setItem(parent->rowCount()-1, IHEADER_LAST+i, extra);
+    }
 
     return number;
 }
@@ -347,6 +360,7 @@ void ItemListTabWidget::onItemsCellDoubleClicked(int row, int column)
     QLineEdit *nUnit = NULL;
     QLineEdit *nUnitPrice = NULL;
     QLineEdit *nAmount = NULL;
+    QLineEdit *nExtra = NULL;
 
     int lrow = 0;
     if(column == IHEADER_NUMBER) {
@@ -378,6 +392,13 @@ void ItemListTabWidget::onItemsCellDoubleClicked(int row, int column)
         nAmount->selectAll();
         layout->addWidget(new QLabel(tr("Amount:")), lrow, 0);
         layout->addWidget(nAmount, lrow++, 1);
+    }
+    else if(column >= IHEADER_LAST) {
+        ExtraItem *extra = m_extraItems[column - IHEADER_LAST];
+        nExtra = new QLineEdit(itemList->getString(extra->thingName));
+        nExtra->selectAll();
+        layout->addWidget(new QLabel(tr("%1").arg(extra->headerName)), lrow, 0);
+        layout->addWidget(nExtra, lrow++, 1);
     }
 
     layout->addLayout(Tools::createOkCancel(&dialog), lrow, 0, 1, 2);
@@ -413,6 +434,12 @@ void ItemListTabWidget::onItemsCellDoubleClicked(int row, int column)
             itemList->set("amount", nAmount->text(), true);
             itemWidget->setData(Qt::DisplayRole, nAmount->text());
             itemWidget->setData(Qt::UserRole, nAmount->text().toInt());
+        }
+        else if(nExtra) {
+            ExtraItem *extra = m_extraItems[column - IHEADER_LAST];
+            itemList->set(extra->thingName, nExtra->text(), true);
+            itemWidget->setData(Qt::DisplayRole, nExtra->text());
+            itemWidget->setData(Qt::UserRole, nExtra->text().toInt());
         }
         tableWidget->selectRow(itemWidget->row());
     }

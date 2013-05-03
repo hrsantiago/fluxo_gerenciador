@@ -44,6 +44,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("Manager");
     QCoreApplication::setApplicationVersion("1.0.0");
 
+    a.setStyle("cleanlooks");
+
 
 #if QT_VERSION > 0x050000
     qInstallMessageHandler(messageHandler);

@@ -87,10 +87,10 @@ MyTableWidgetItem *Events::addEvent(Thing *event)
     MyTableWidgetItem *description = new MyTableWidgetItem();
     description->setFlags(description->flags() & ~Qt::ItemIsEditable);
 
-    QString id = event->getString("id"); // This must be done this way, so tr will work properly.
-    if(id == "waiting_send")
+    QString id = event->getString("id"); // This must be done this way, so translate will work properly.
+    if(id == "proposal_waiting_send")
         description->setData(Qt::DisplayRole, tr("Send proposal to client."));
-    else if(id == "waiting_response")
+    else if(id == "proposal_waiting_response")
         description->setData(Qt::DisplayRole, tr("Update proposal with client response."));
     else
         description->setData(Qt::DisplayRole, event->getString("description"));
@@ -137,13 +137,13 @@ void Events::onEventsCustomContextMenuRequested(QPoint pos)
 
     QAction *ret = menu.exec(m_eventsTable->viewport()->mapToGlobal(pos));
     if(add && ret == add) {
-        //onAddProposalClicked();
+        //onAddEventClicked();
     }
     else if(edit && ret == edit) {
-        //onProposalsCellDoubleClicked(currentItem->row(), currentItem->column());
+        //onEventsCellDoubleClicked(currentItem->row(), currentItem->column());
     }
     else if(remove && ret == remove) {
-        //onRemoveProposalClicked();
+        //onRemoveEventClicked();
     }
     else if(goToIdentifier && ret == goToIdentifier) {
         g_mainWindow->selectThing(event->getParent());

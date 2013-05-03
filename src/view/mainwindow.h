@@ -21,6 +21,12 @@ public:
     void setLanguage(const QString& language);
     void selectThing(Thing *thing);
 
+    Events *getEvents() { return m_events; }
+    Contracts *getContracts() { return m_contracts; }
+    Proposals *getProposals() { return m_proposals; }
+    People *getPeople() { return m_people; }
+    Companies *getCompanies() { return m_companies; }
+
 private:
     void saveSettings();
 

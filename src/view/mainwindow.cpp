@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
     viewActionGroup->addAction(m_proposalsAction);
     viewActionGroup->addAction(m_peopleAction);
     viewActionGroup->addAction(m_companiesAction);
-    m_proposalsAction->setChecked(true);
+    m_eventsAction->setChecked(true);
 
     // Preferences
     QMenu *preferencesMenu = qMenuBar->addMenu(tr("Preferences"));
@@ -164,7 +164,6 @@ void MainWindow::setLanguage(const QString& language)
     }
 }
 
-
 void MainWindow::selectThing(Thing *thing)
 {
     if(!thing)
@@ -174,7 +173,6 @@ void MainWindow::selectThing(Thing *thing)
     if(type == "Event")
         m_eventsAction->trigger();
     else if(type == "Contract") {
-        m_contracts->updateContractsList();
         m_contracts->selectContract(thing);
         m_contractsAction->trigger();
     }

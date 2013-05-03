@@ -234,21 +234,21 @@ void Thing::clearChildren(const QString& type)
 
 void Thing::onSet(const QString& key, const QVariant& value)
 {
-    // Todo: move this somewhere else.
+    // TODO: move this somewhere else.
 
     if(getString("type") == "Proposal") {
         clearChildren("Event");
 
         if(key == "state" && value.toInt() == STATE_PENDING) {
             Thing *event = new Thing("Event");
-            event->set("id", "waiting_send");
+            event->set("id", "proposal_waiting_send");
             event->set("identifier", get("reference"));
             event->set("date", QDate::currentDate().addDays(1));
             addChild(event);
         }
         else if(key == "state" && value.toInt() == STATE_SENT) {
             Thing *event = new Thing("Event");
-            event->set("id", "waiting_response");
+            event->set("id", "proposal_waiting_response");
             event->set("identifier", get("reference"));
             event->set("date", QDate::currentDate().addDays(10));
             addChild(event);
@@ -258,10 +258,25 @@ void Thing::onSet(const QString& key, const QVariant& value)
             Thing *contract = new Thing("Contract");
             contract->copy(this);
             contract->set("state", STATE_IN_PROGRESS);
+            contract->set("date_start", contract->get("date"));
+            contract->set("date_end", contract->get("date").toDate().addMonths(1));
+            contract->remove("date");
             contract->remove("template");
 
-            g_project->addThing(contract);
-            g_mainWindow->selectThing(contract);
+            const QVector<Thing*>& itemListVector = contract->getChildren("ItemList");
+            for(int i = 0; i < itemListVector.size(); ++i) {
+                Thing *child = itemListVector[i];
+                const QVector<Thing*>& itemsVector = child->getChildren("Item");
+                for(int j = 0; j < itemsVector.size(); ++j)
+                    itemsVector[j]->set("amount_done", 0);
+            }
+
+            if(g_project->addThing(contract)) {
+                g_mainWindow->getContracts()->updateContractsList();
+                g_mainWindow->selectThing(contract);
+            }
+            else
+                qCritical() << tr("A contract with this reference already exists.");
         }
     }
 }

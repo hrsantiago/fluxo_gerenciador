@@ -5,19 +5,31 @@
 #include "tools.h"
 #include "core/project.h"
 
+struct ExtraItem
+{
+    ExtraItem(const QString& hName, const QString& tName) {
+        headerName = hName;
+        thingName = tName;
+    }
+
+    QString headerName;
+    QString thingName;
+};
+
 class ItemListTabWidget : public QTabWidget
 {
     Q_OBJECT
 
 public:
-    ItemListTabWidget(QWidget *parent = 0);
+    ItemListTabWidget(const QVector<ExtraItem*>& extraItems = QVector<ExtraItem*>(), QWidget *parent = 0);
 
     enum ItemsTableHeader {
         IHEADER_NUMBER,
         IHEADER_DESCRIPTION,
         IHEADER_UNIT,
         IHEADER_UNIT_PRICE,
-        IHEADER_AMOUNT
+        IHEADER_AMOUNT,
+        IHEADER_LAST
     };
 
     void setParentThing(Thing *thing) { m_parentThing = thing; }
@@ -33,6 +45,7 @@ private:
     MyTableWidgetItem *addItem(QTableWidget *parent, Thing *item);
 
     Thing *m_parentThing;
+    QVector<ExtraItem*> m_extraItems;
     
 private slots:
     void onItemListAddClicked();
